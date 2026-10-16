@@ -1,48 +1,47 @@
-export type LearningStage = 'context' | 'simulation' | 'symbolic' | 'comparison' | 'quiz';
+export type StageId = 'orientasi' | 'tp1' | 'tp2' | 'tp3' | 'latihan';
 
-export interface WaterScenario {
-  id: string;
-  title: string;
-  description: string;
-  startLevel: number; // in meters, -5 to +5
-  delta: number; // e.g. +3, -2
-  actionType: 'rain' | 'sun' | 'drain';
-  label: string;
+export type TpKey = 'tp1' | 'tp2' | 'tp3';
+
+export type Relation = '<' | '>' | '=';
+
+// Skor tiap tahap dihitung dari percobaan pertama, sebagai bukti ketercapaian TP.
+export interface StageScore {
+  correct: number;
+  total: number;
 }
 
-export interface SymbolicProblem {
+export type ScoreBoard = Record<TpKey, StageScore | null>;
+
+export interface LocateItem {
   id: string;
-  contextStory: string;
-  startLevel: number;
-  operation: '+' | '-';
-  changeAmount: number;
-  expectedResult: number;
-  explanation: string;
+  mode: 'baca' | 'tempatkan';
+  line: 'tegak' | 'mendatar';
+  context: string;
+  target: number;
 }
 
-export interface ComparisonProblem {
+export interface CompareItem {
   id: string;
-  stationA: {
-    name: string;
-    level: number;
-    description: string;
-  };
-  stationB: {
-    name: string;
-    level: number;
-    description: string;
-  };
-  relation: '<' | '>' | '=';
-  explanation: string;
+  context: string;
+  labelA: string;
+  labelB: string;
+  a: number;
+  b: number;
 }
 
-export interface QuizQuestion {
-  id: number;
+export interface OrderItem {
+  id: string;
+  context: string;
+  direction: 'naik' | 'turun';
+  values: number[];
+  labels?: string[];
+}
+
+export interface PracticeQuestion {
+  id: string;
+  tp: TpKey;
   question: string;
-  contextHint?: string;
-  stationALevel?: number;
-  stationBLevel?: number;
   options: string[];
-  correctAnswer: string;
+  answer: string;
   explanation: string;
 }

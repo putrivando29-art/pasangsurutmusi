@@ -1,0 +1,163 @@
+import React, { useState } from 'react';
+import { ArrowRight, Compass, ListChecks } from 'lucide-react';
+import { AmperaCanvas } from './AmperaCanvas';
+import { NumberLine } from './NumberLine';
+import { fmt } from '../utils/number';
+import { sound } from '../utils/audio';
+
+interface OrientationStageProps {
+  name: string;
+  kelas: string;
+  onIdentity: (name: string, kelas: string) => void;
+  onContinue: () => void;
+}
+
+const TUJUAN = [
+  'Menentukan letak bilangan bulat pada garis bilangan dengan tepat.',
+  'Dengan bantuan garis bilangan, membandingkan nilai dua bilangan bulat menggunakan simbol <, >, atau =.',
+  'Mengurutkan beberapa bilangan bulat dari yang terkecil ke terbesar atau sebaliknya berdasarkan hasil perbandingan.',
+];
+
+export const OrientationStage: React.FC<OrientationStageProps> = ({ name, kelas, onIdentity, onContinue }) => {
+  const [level, setLevel] = useState(-2);
+
+  const choose = (lvl: number) => {
+    sound.playWaterSplash();
+    setLevel(lvl);
+  };
+
+  return (
+    <div className="space-y-5">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-5">
+        <div className="lg:col-span-7 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
+          <div className="inline-flex items-center gap-2 px-2.5 py-0.5 rounded-full bg-red-950/60 border border-red-500/30 text-rose-300 text-xs font-semibold">
+            <Compass className="w-3.5 h-3.5" />
+            <span>Matematika Kelas VII · Fase D · Bilangan Bulat</span>
+          </div>
+          <h2 className="text-lg sm:text-xl font-extrabold text-slate-100 tracking-tight">
+            Membaca, Membandingkan, dan Mengurutkan Bilangan Bulat lewat Pasang Surut Sungai Musi
+          </h2>
+          <p className="text-sm text-slate-300 leading-relaxed">
+            Permukaan air Sungai Musi naik saat pasang dan turun saat surut. Untuk mencatat ketinggiannya dipakai papan duga
+            (peil schaal): tiang berskala dengan satu garis yang disepakati sebagai <strong>titik acuan 0</strong>. Papan itu
+            sebenarnya sebuah <strong>garis bilangan tegak</strong>.
+          </p>
+          <div className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
+            <span className="text-[11px] font-bold uppercase tracking-wider text-amber-300 flex items-center gap-1.5">
+              <ListChecks className="w-3.5 h-3.5" /> Setelah belajar dengan media ini, kamu diharapkan mampu:
+            </span>
+            <ol className="list-decimal list-inside text-sm text-slate-200 space-y-1">
+              {TUJUAN.map((t) => (
+                <li key={t}>{t}</li>
+              ))}
+            </ol>
+          </div>
+        </div>
+
+        <div className="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
+          <h3 className="text-sm font-bold text-slate-100">Petunjuk belajar mandiri</h3>
+          <ol className="list-decimal list-inside text-sm text-slate-300 space-y-1.5">
+            <li>Siapkan LKPD dari Google Classroom. Media ini dan LKPD dipakai bersama.</li>
+            <li>Kerjakan tahap 1 sampai 4 secara berurutan. Setiap tahap berisi latihan dengan umpan balik.</li>
+            <li>Jawaban pada percobaan pertama dicatat sebagai bukti belajarmu. Kamu tetap boleh mencoba lagi sampai benar.</li>
+            <li>Di akhir, salin ringkasan hasil dan tempelkan di tugas Google Classroom.</li>
+          </ol>
+          <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
+            <label className="sm:col-span-2 block">
+              <span className="text-xs font-semibold text-slate-400">Nama lengkap</span>
+              <input
+                value={name}
+                onChange={(e) => onIdentity(e.target.value, kelas)}
+                className="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 focus:border-amber-400 outline-none px-3 py-2 text-sm text-slate-100"
+                autoComplete="name"
+              />
+            </label>
+            <label className="block">
+              <span className="text-xs font-semibold text-slate-400">Kelas</span>
+              <input
+                value={kelas}
+                onChange={(e) => onIdentity(name, e.target.value)}
+                placeholder="VII-A"
+                className="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 focus:border-amber-400 outline-none px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600"
+              />
+            </label>
+          </div>
+        </div>
+      </div>
+
+      <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
+        <div>
+          <h3 className="text-base font-bold text-slate-100">Eksplorasi: dari papan duga ke garis bilangan</h3>
+          <p className="text-sm text-slate-300 mt-1">
+            Klik angka pada papan duga atau tombol di bawah. Amati letak permukaan air pada papan tegak dan titik yang sama
+            pada garis bilangan mendatar.
+          </p>
+        </div>
+
+        <AmperaCanvas
+          waterLevel={level}
+          interactiveGauge
+          onSelectLevel={choose}
+          showClearanceInfo={false}
+          locationName="Papan duga · Sungai Musi"
+        />
+
+        <div className="flex flex-wrap gap-1.5 justify-center">
+          {[-5, -4, -3, -2, -1, 0, 1, 2, 3, 4, 5].map((lvl) => (
+            <button
+              key={lvl}
+              onClick={() => choose(lvl)}
+              aria-pressed={level === lvl}
+              className={`w-11 h-9 rounded-lg font-mono font-bold text-xs transition-all ${
+                level === lvl
+                  ? 'bg-amber-400 text-slate-950'
+                  : lvl > 0
+                  ? 'bg-cyan-950 border border-cyan-800 text-cyan-300 hover:bg-cyan-900'
+                  : lvl === 0
+                  ? 'bg-slate-800 border border-amber-500/50 text-amber-300 hover:bg-slate-700'
+                  : 'bg-rose-950 border border-rose-800 text-rose-300 hover:bg-rose-900'
+              }`}
+            >
+              {fmt(lvl)}
+            </button>
+          ))}
+        </div>
+
+        <div className="bg-slate-950 border border-slate-800 rounded-xl p-2 sm:p-3">
+          <NumberLine min={-5} max={5} labels="all" points={[{ value: level, label: `${fmt(level)} m`, tone: 'neutral' }]} />
+        </div>
+
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 text-sm">
+          <div className="p-3 rounded-xl bg-cyan-950/40 border border-cyan-500/30 text-cyan-100">
+            <strong className="block">Di atas titik acuan</strong>
+            ditulis bilangan positif. Pada garis mendatar letaknya di sebelah <strong>kanan</strong> 0.
+          </div>
+          <div className="p-3 rounded-xl bg-amber-950/40 border border-amber-500/30 text-amber-100">
+            <strong className="block">Tepat di titik acuan</strong>
+            ditulis 0. Nol bukan bilangan positif dan bukan bilangan negatif.
+          </div>
+          <div className="p-3 rounded-xl bg-rose-950/40 border border-rose-500/30 text-rose-100">
+            <strong className="block">Di bawah titik acuan</strong>
+            ditulis bilangan negatif. Pada garis mendatar letaknya di sebelah <strong>kiri</strong> 0.
+          </div>
+        </div>
+
+        <p className="text-xs text-slate-400">
+          Catatan: skala -5 m sampai +5 m dan angka ketinggian di seluruh media ini adalah model untuk belajar, bukan hasil
+          pengukuran sebenarnya. Sumber fakta tentang Sungai Musi ada di menu Panduan & Info.
+        </p>
+
+        <button
+          onClick={() => {
+            sound.playClick();
+            onContinue();
+          }}
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm"
+        >
+          <span>Mulai Tahap 1: Menentukan Letak</span>
+          <ArrowRight className="w-4 h-4" />
+        </button>
+      </div>
+    </div>
+  );
+};

@@ -86,11 +86,18 @@ export const PeilSchaalGauge: React.FC<PeilSchaalGaugeProps> = ({
                 <div
                   key={lvl}
                   onClick={() => interactive && onSelectLevel?.(lvl)}
-                  className={`group relative flex items-center px-1.5 py-0.5 cursor-pointer transition-all ${
-                    interactive ? 'hover:bg-white/10' : ''
+                  className={`group relative flex items-center px-1.5 py-0.5 transition-all ${
+                    interactive ? 'cursor-pointer hover:bg-white/10 focus-visible:bg-amber-300/20 outline-none' : ''
                   }`}
+                  onKeyDown={(e) => {
+                    if (interactive && (e.key === 'Enter' || e.key === ' ')) {
+                      e.preventDefault();
+                      onSelectLevel?.(lvl);
+                    }
+                  }}
                   role={interactive ? 'button' : undefined}
                   tabIndex={interactive ? 0 : undefined}
+                  aria-label={interactive ? `Pilih ketinggian ${lvl > 0 ? `+${lvl}` : lvl} meter` : undefined}
                 >
                   {/* Gauge Tick */}
                   <div

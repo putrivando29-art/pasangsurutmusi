@@ -1,5 +1,5 @@
 import React from 'react';
-import { Volume2, VolumeX, HelpCircle, Compass } from 'lucide-react';
+import { Volume2, VolumeX, HelpCircle } from 'lucide-react';
 
 interface NavbarProps {
   soundEnabled: boolean;
@@ -23,14 +23,14 @@ export const Navbar: React.FC<NavbarProps> = ({
           <div>
             <div className="flex items-center gap-2">
               <h1 className="text-base sm:text-lg font-extrabold text-slate-100 tracking-tight leading-none">
-                Media Pasang Surut Sungai Musi
+                Bilangan Bulat Sungai Musi
               </h1>
               <span className="text-[10px] font-bold text-rose-400 border border-rose-500/30 rounded px-1.5 py-0.2 bg-rose-950/40">
                 Palembang
               </span>
             </div>
             <p className="text-xs text-slate-400 mt-0.5">
-              Simulasi Interaktif Bilangan Bulat Berbasis Garis Bilangan Vertikal (Peil Schaal) & Jembatan Ampera
+              Letak, perbandingan, dan urutan bilangan bulat pada garis bilangan
             </p>
           </div>
         </div>

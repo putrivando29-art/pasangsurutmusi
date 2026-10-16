@@ -1,6 +1,6 @@
 {
-  "name": "Pasang Surut Sungai Musi - Belajar Bilangan Bulat",
-  "description": "Media pembelajaran interaktif bilangan bulat kontekstual Sungai Musi & Jembatan Ampera: simulasi pasang surut dengan tiang peil schaal, operasi penjumlahan & pengurangan, serta perbandingan bilangan.",
+  "name": "Bilangan Bulat Sungai Musi - Letak, Membandingkan, Mengurutkan",
+  "description": "Media pembelajaran bilangan bulat kelas VII berkonteks pasang surut Sungai Musi: menentukan letak pada garis bilangan, membandingkan dengan simbol <, >, =, dan mengurutkan bilangan bulat.",
   "requestFramePermissions": [],
   "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
 }
