@@ -18,7 +18,12 @@ Tujuan yang dilayani: menyiapkan pemahaman awal untuk TP 1, TP 2, dan TP 3
 
 Langkah murid:
 1. Menuliskan nama lengkap dan kelas pada kolom yang tersedia. Data ini dipakai lagi di ringkasan hasil pada akhir pembelajaran.
-2. Membaca tiga tujuan pembelajaran dan empat petunjuk belajar mandiri.
+2. Membaca tiga tujuan pembelajaran, empat catatan "Sebelum mulai", dan kotak "Alur pengerjaan". Kotak itu memuat lima langkah beserta waktunya:
+   a. Mulai (15 menit): mengisi nama dan kelas, membaca TP, lalu mengklik papan duga dan mengamati titik pada garis bilangan.
+   b. TP 1: Letak (25 menit): mengklik posisi bilangan lalu menekan Periksa, memilih bilangan pada soal membaca titik, mengerjakan 7 soal, lalu mencatat skor di LKPD.
+   c. TP 2: Bandingkan (30 menit): mengamati dua titik, memilih simbol lalu alasannya, mengerjakan 7 soal, lalu menulis tiga kalimat perbandingan di LKPD.
+   d. TP 3: Urutkan (25 menit): mengetuk kartu sesuai urutan lalu menekan Periksa urutan, memakai bantuan garis bilangan jika perlu, mengerjakan 4 soal, lalu menyalin satu urutan ke LKPD.
+   e. Akhir (25 menit): menjawab 9 soal latihan, mengisi 3 pertanyaan refleksi, lalu menyalin hasil ke tugas Google Classroom.
 3. Mengklik angka pada papan duga di sisi kanan gambar Sungai Musi, atau mengklik tombol angka -5 sampai +5 di bawah gambar.
 4. Mengamati tiga perubahan sekaligus: permukaan air pada gambar naik atau turun, papan duga menunjukkan ketinggian yang dipilih, dan sebuah titik berpindah pada garis bilangan mendatar di bawahnya.
 5. Membaca tiga kartu kesepakatan: di atas titik acuan ditulis bilangan positif dan letaknya di kanan 0; tepat di titik acuan ditulis 0; di bawah titik acuan ditulis bilangan negatif dan letaknya di kiri 0.

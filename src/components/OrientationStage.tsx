@@ -18,6 +18,54 @@ const TUJUAN = [
   'Mengurutkan beberapa bilangan bulat dari yang terkecil ke terbesar atau sebaliknya berdasarkan hasil perbandingan.',
 ];
 
+const ALUR = [
+  {
+    tahap: 'Mulai',
+    waktu: '15 menit',
+    langkah: [
+      'Isi nama dan kelas.',
+      'Baca tujuan pembelajaran.',
+      'Klik angka pada papan duga, lalu amati titik yang berpindah pada garis bilangan.',
+    ],
+  },
+  {
+    tahap: 'TP 1: Letak',
+    waktu: '25 menit',
+    langkah: [
+      'Klik posisi bilangan pada papan duga atau garis bilangan, lalu tekan Periksa.',
+      'Pada soal membaca titik, pilih bilangan yang ditunjukkan titik merah.',
+      'Kerjakan 7 soal, lalu catat skornya di LKPD.',
+    ],
+  },
+  {
+    tahap: 'TP 2: Bandingkan',
+    waktu: '30 menit',
+    langkah: [
+      'Amati dua titik pada garis bilangan.',
+      'Pilih simbol <, =, atau >, lalu pilih alasan yang tepat.',
+      'Kerjakan 7 soal, lalu tulis tiga kalimat perbandingan di LKPD.',
+    ],
+  },
+  {
+    tahap: 'TP 3: Urutkan',
+    waktu: '25 menit',
+    langkah: [
+      'Ketuk kartu bilangan sesuai urutan yang diminta, lalu tekan Periksa urutan.',
+      'Jika perlu, tekan Tampilkan di garis bilangan.',
+      'Kerjakan 4 soal, lalu salin satu urutan ke LKPD.',
+    ],
+  },
+  {
+    tahap: 'Akhir',
+    waktu: '25 menit',
+    langkah: [
+      'Jawab 9 soal latihan, lalu tekan Kumpulkan jawaban.',
+      'Isi 3 pertanyaan refleksi.',
+      'Tekan Salin hasil, lalu tempel di tugas Google Classroom.',
+    ],
+  },
+];
+
 export const OrientationStage: React.FC<OrientationStageProps> = ({ name, kelas, onIdentity, onContinue }) => {
   const [level, setLevel] = useState(-2);
 
@@ -55,13 +103,14 @@ export const OrientationStage: React.FC<OrientationStageProps> = ({ name, kelas,
         </div>
 
         <div className="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
-          <h3 className="text-sm font-bold text-slate-100">Petunjuk belajar mandiri</h3>
-          <ol className="list-decimal list-inside text-sm text-slate-300 space-y-1.5">
-            <li>Siapkan LKPD dari Google Classroom. Media ini dan LKPD dipakai bersama.</li>
-            <li>Kerjakan tahap 1 sampai 4 secara berurutan. Setiap tahap berisi latihan dengan umpan balik.</li>
-            <li>Jawaban pada percobaan pertama dicatat sebagai bukti belajarmu. Kamu tetap boleh mencoba lagi sampai benar.</li>
-            <li>Di akhir, salin ringkasan hasil dan tempelkan di tugas Google Classroom.</li>
-          </ol>
+          <h3 className="text-sm font-bold text-slate-100">Sebelum mulai</h3>
+          <ul className="list-disc list-inside text-sm text-slate-300 space-y-1.5">
+            <li>Siapkan LKPD dari Google Classroom. Website dan LKPD dipakai bersama.</li>
+            <li>Tahap dapat dipilih dari baris di atas. Tanda centang berarti tahap itu sudah selesai.</li>
+            <li>Jawaban pertama setiap soal dicatat sebagai bukti belajarmu. Kamu tetap boleh mencoba lagi sampai benar.</li>
+            <li>Jangan memuat ulang halaman di tahap Akhir sebelum ringkasan hasil disalin.</li>
+          </ul>
+          <p className="text-xs text-slate-400">Tulis nama dan kelasmu. Keduanya ikut tercantum di ringkasan hasil.</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <label className="sm:col-span-2 block">
               <span className="text-xs font-semibold text-slate-400">Nama lengkap</span>
@@ -84,6 +133,35 @@ export const OrientationStage: React.FC<OrientationStageProps> = ({ name, kelas,
           </div>
         </div>
       </div>
+
+      <section
+        aria-labelledby="alur-title"
+        className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3"
+      >
+        <div className="flex flex-wrap items-baseline justify-between gap-2">
+          <h3 id="alur-title" className="text-base font-bold text-slate-100">
+            Alur pengerjaan
+          </h3>
+          <span className="text-xs text-slate-400">Total 3 JP (120 menit)</span>
+        </div>
+        <ol className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-2">
+          {ALUR.map((step, i) => (
+            <li key={step.tahap} className="p-3 rounded-xl bg-slate-950 border border-slate-800 space-y-1.5">
+              <div className="flex items-center justify-between gap-2">
+                <span className="text-xs font-bold text-amber-300">
+                  {i + 1}. {step.tahap}
+                </span>
+                <span className="text-[11px] font-semibold text-slate-400 whitespace-nowrap">{step.waktu}</span>
+              </div>
+              <ul className="list-disc list-inside text-xs text-slate-300 space-y-1">
+                {step.langkah.map((l) => (
+                  <li key={l}>{l}</li>
+                ))}
+              </ul>
+            </li>
+          ))}
+        </ol>
+      </section>
 
       <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
         <div>

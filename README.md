@@ -39,7 +39,7 @@ Operasi hitung (penjumlahan dan pengurangan) **tidak** termasuk tujuan pertemuan
 | Dimensi | Elemen di RPM | Fitur media yang mendukung |
 |---|---|---|
 | Penalaran Kritis | Menganalisis nilai bilangan, menentukan hubungan perbandingan, memberi alasan logis | Tahap 2 meminta murid memilih **alasan** setelah memilih simbol. Pengecoh alasan berisi miskonsepsi umum. Soal latihan nomor 8 meminta murid menilai jawaban teman yang keliru. |
-| Kemandirian | Mengikuti tahapan secara mandiri, mengatur waktu, menyelesaikan aktivitas sesuai petunjuk | Petunjuk belajar mandiri di halaman Mulai, navigasi tahap, umpan balik otomatis, kesempatan mencoba lagi, dan kemajuan yang tersimpan di perangkat. |
+| Kemandirian | Mengikuti tahapan secara mandiri, mengatur waktu, menyelesaikan aktivitas sesuai petunjuk | Alur pengerjaan lima tahap beserta alokasi waktunya di halaman Mulai, navigasi tahap, umpan balik otomatis, kesempatan mencoba lagi, dan kemajuan yang tersimpan di perangkat. |
 | Komunikasi | Mengomunikasikan hasil perbandingan dan alasannya melalui diskusi atau LKPD | Setiap jawaban benar di Tahap 2 menampilkan cara membaca kalimat matematikanya. Ringkasan hasil dan jawaban refleksi disalin ke Google Classroom. |
 | Kreativitas | Mengeksplorasi berbagai representasi untuk menyatakan perbandingan | Representasi papan duga (tegak), garis bilangan (mendatar), simbol, dan rantai urutan. Refleksi nomor 2 meminta contoh lain dari kehidupan sehari-hari. **Dukungan untuk dimensi ini masih lemah**; tugas mencipta representasi sendiri sebaiknya ada di LKPD. |
 
@@ -49,7 +49,7 @@ Operasi hitung (penjumlahan dan pengurangan) **tidak** termasuk tujuan pertemuan
 
 | Urutan | Tahap | Isi singkat | Jumlah soal |
 |---|---|---|---|
-| 0 | Mulai (Orientasi) | Identitas murid, TP, petunjuk belajar mandiri, eksplorasi papan duga dan garis bilangan | Tidak dinilai |
+| 0 | Mulai (Orientasi) | Identitas murid, TP, alur pengerjaan, eksplorasi papan duga dan garis bilangan | Tidak dinilai |
 | 1 | TP 1: Letak | Menempatkan dan membaca bilangan bulat pada papan duga dan garis bilangan | 7 |
 | 2 | TP 2: Bandingkan | Memilih simbol <, >, = lalu memilih alasan | 7 |
 | 3 | TP 3: Urutkan | Menyusun 4 sampai 5 bilangan naik atau turun | 4 |
@@ -190,7 +190,7 @@ Teknologi: React 19, TypeScript, Vite, Tailwind CSS 4, ikon `lucide-react`, efek
     └── components/
         ├── Navbar.tsx             Judul, tombol suara, tombol Panduan & Info
         ├── GuideModal.tsx         TP, alur media, catatan data, daftar sumber
-        ├── OrientationStage.tsx   Tahap Mulai: identitas, TP, petunjuk, eksplorasi
+        ├── OrientationStage.tsx   Tahap Mulai: identitas, TP, alur pengerjaan, eksplorasi
         ├── LocateStage.tsx        Tahap 1 (TP 1): bank soal dan diagnosis kesalahan letak
         ├── CompareStage.tsx       Tahap 2 (TP 2): simbol, alasan, umpan balik miskonsepsi
         ├── OrderStage.tsx         Tahap 3 (TP 3): kartu bilangan, diagnosis urutan
@@ -213,6 +213,7 @@ Teknologi: React 19, TypeScript, Vite, Tailwind CSS 4, ikon `lucide-react`, efek
 | Soal latihan dan pertanyaan refleksi | `src/components/PracticeStage.tsx` | `QUESTIONS`, `REFLECTIONS` |
 | Batas saran mengulang tahap | `src/components/PracticeStage.tsx` | `MIN_BENAR_PER_TP` |
 | Rumusan TP di halaman Mulai | `src/components/OrientationStage.tsx` | konstanta `TUJUAN` |
+| Alur pengerjaan dan alokasi waktu di halaman Mulai | `src/components/OrientationStage.tsx` | konstanta `ALUR` |
 | Sumber fakta | `src/components/GuideModal.tsx` | konstanta `SOURCES` |
 
 ---
