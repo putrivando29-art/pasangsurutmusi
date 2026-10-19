@@ -17,9 +17,9 @@ const ITEMS: OrderItem[] = [
   },
   {
     id: 'o2',
-    context: 'Catatan ketinggian air lima waktu pengamatan: -4 m, +3 m, -6 m, +1 m, 0 m.',
+    context: 'Catatan ketinggian air lima waktu pengamatan: -4 m, +3 m, -5 m, +1 m, 0 m.',
     direction: 'turun',
-    values: [-4, 3, -6, 1, 0],
+    values: [-4, 3, -5, 1, 0],
   },
   {
     id: 'o3',
@@ -29,9 +29,9 @@ const ITEMS: OrderItem[] = [
   },
   {
     id: 'o4',
-    context: 'Saat kemarau, air selalu di bawah titik acuan: -1 m, -9 m, -3 m, -10 m, -6 m.',
+    context: 'Saat kemarau, air selalu di bawah titik acuan: -1 m, -4 m, -3 m, -5 m, -2 m.',
     direction: 'turun',
-    values: [-1, -9, -3, -10, -6],
+    values: [-1, -4, -3, -5, -2],
   },
 ];
 
@@ -47,7 +47,7 @@ const diagnose = (answer: number[], item: OrderItem): string => {
     const allNegative = item.values.every((v) => v < 0);
     return `Urutanmu terbalik. Soal meminta ${directionText(item.direction)}.${
       allNegative
-        ? ' Hati-hati: pada bilangan negatif, angka yang tampak besar (misalnya 10 pada -10) justru bernilai paling kecil karena letaknya paling kiri.'
+        ? ' Hati-hati: pada bilangan negatif, angka yang tampak besar (misalnya 5 pada -5) justru bernilai paling kecil karena letaknya paling kiri.'
         : ''
     }`;
   }

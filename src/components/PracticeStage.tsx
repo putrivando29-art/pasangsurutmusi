@@ -32,10 +32,10 @@ const QUESTIONS: PracticeQuestion[] = [
   {
     id: 'p4',
     tp: 'tp1',
-    question: 'Ketinggian air 6 m di atas titik acuan ditulis sebagai bilangan ...',
-    options: ['-6', '+6', '+5', '-5'],
-    answer: '+6',
-    explanation: 'Di atas titik acuan berarti positif. Enam meter di atas titik acuan ditulis +6 (atau 6).',
+    question: 'Ketinggian air 4 m di atas titik acuan ditulis sebagai bilangan ...',
+    options: ['-4', '+4', '+3', '-3'],
+    answer: '+4',
+    explanation: 'Di atas titik acuan berarti positif. Empat meter di atas titik acuan ditulis +4 (atau 4).',
   },
   {
     id: 'p5',

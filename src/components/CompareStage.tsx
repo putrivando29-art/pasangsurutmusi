@@ -9,11 +9,11 @@ import { sound } from '../utils/audio';
 const ITEMS: CompareItem[] = [
   { id: 'c1', context: 'Pukul 06.00 air tercatat -3 m, pukul 12.00 tercatat -1 m.', labelA: '06.00', labelB: '12.00', a: -3, b: -1 },
   { id: 'c2', context: 'Hari Senin air tercatat +2 m, hari Selasa tercatat -4 m.', labelA: 'Senin', labelB: 'Selasa', a: 2, b: -4 },
-  { id: 'c3', context: 'Pukul 03.00 air tercatat -6 m, pukul 09.00 tercatat -2 m.', labelA: '03.00', labelB: '09.00', a: -6, b: -2 },
+  { id: 'c3', context: 'Pukul 03.00 air tercatat -5 m, pukul 09.00 tercatat -2 m.', labelA: '03.00', labelB: '09.00', a: -5, b: -2 },
   { id: 'c4', context: 'Pagi hari air tepat di titik acuan (0 m), malam hari tercatat -5 m.', labelA: 'Pagi', labelB: 'Malam', a: 0, b: -5 },
   { id: 'c5', context: 'Hari Rabu dan hari Kamis air sama-sama tercatat -4 m.', labelA: 'Rabu', labelB: 'Kamis', a: -4, b: -4 },
-  { id: 'c6', context: 'Pukul 15.00 air tercatat -1 m, pukul 21.00 tercatat -7 m.', labelA: '15.00', labelB: '21.00', a: -1, b: -7 },
-  { id: 'c7', context: 'Bulan Januari pasang tertinggi tercatat +3 m, bulan Februari +8 m.', labelA: 'Jan', labelB: 'Feb', a: 3, b: 8 },
+  { id: 'c6', context: 'Pukul 15.00 air tercatat -1 m, pukul 21.00 tercatat -4 m.', labelA: '15.00', labelB: '21.00', a: -1, b: -4 },
+  { id: 'c7', context: 'Bulan Januari pasang tertinggi tercatat +1 m, bulan Februari +4 m.', labelA: 'Jan', labelB: 'Feb', a: 1, b: 4 },
 ];
 
 interface Reason {
