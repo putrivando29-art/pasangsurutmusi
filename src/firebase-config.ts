@@ -6,12 +6,12 @@
 // Selama apiKey kosong, media berjalan dalam mode lokal tanpa login
 // (kemajuan hanya tersimpan di peramban masing-masing).
 export const firebaseConfig = {
-  apiKey: '',
-  authDomain: '',
-  projectId: '',
-  storageBucket: '',
-  messagingSenderId: '',
-  appId: '',
+  apiKey: 'AIzaSyBGYtcxVyfkw2g87jRXTSGgF0dfpXHf77M',
+  authDomain: 'pasangsurutmusi.firebaseapp.com',
+  projectId: 'pasangsurutmusi',
+  storageBucket: 'pasangsurutmusi.firebasestorage.app',
+  messagingSenderId: '549880984858',
+  appId: '1:549880984858:web:624341df8667a9f65028a3',
 };
 
 // Email akun Google guru yang boleh membuka halaman laporan.
