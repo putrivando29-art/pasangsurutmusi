@@ -1,5 +1,6 @@
 import React, { useMemo, useState } from 'react';
-import { CheckCircle2, ClipboardCopy, RotateCcw, XCircle } from 'lucide-react';
+import { usePersistentState } from '../utils/storage';
+import { CheckCircle2, ClipboardCopy, Lock, XCircle } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import type { PracticeQuestion, ScoreBoard, TpKey } from '../types';
 import { sound } from '../utils/audio';
@@ -110,13 +111,17 @@ interface PracticeStageProps {
   name: string;
   kelas: string;
   stageScores: ScoreBoard;
-  onGoTo: (tp: TpKey) => void;
 }
 
-export const PracticeStage: React.FC<PracticeStageProps> = ({ name, kelas, stageScores, onGoTo }) => {
-  const [answers, setAnswers] = useState<Record<string, string>>({});
-  const [submitted, setSubmitted] = useState(false);
-  const [reflections, setReflections] = useState<string[]>(REFLECTIONS.map(() => ''));
+export const PracticeStage: React.FC<PracticeStageProps> = ({ name, kelas, stageScores }) => {
+  // Jawaban, waktu pengumpulan, dan refleksi disimpan agar tidak hilang saat halaman dimuat ulang.
+  const [answers, setAnswers] = usePersistentState<Record<string, string>>('latihan-jawaban', {});
+  const [submittedAt, setSubmittedAt] = usePersistentState<string | null>('latihan-dikumpulkan', null);
+  const [reflections, setReflections] = usePersistentState<string[]>(
+    'latihan-refleksi',
+    REFLECTIONS.map(() => ''),
+  );
+  const submitted = submittedAt !== null;
   const [copied, setCopied] = useState<'idle' | 'ok' | 'manual'>('idle');
 
   const allAnswered = QUESTIONS.every((q) => answers[q.id]);
@@ -137,17 +142,14 @@ export const PracticeStage: React.FC<PracticeStageProps> = ({ name, kelas, stage
   const totalCorrect = QUESTIONS.filter((q) => answers[q.id] === q.answer).length;
 
   const submit = () => {
+    const sure = window.confirm(
+      'Jawaban latihan tidak dapat diubah setelah dikumpulkan. Sudah yakin dengan semua jawabanmu?',
+    );
+    if (!sure) return;
     sound.playSuccess();
-    setSubmitted(true);
+    setSubmittedAt(new Date().toLocaleString('id-ID'));
     if (totalCorrect >= QUESTIONS.length - 1) confetti({ particleCount: 90, spread: 70, origin: { y: 0.6 } });
     window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const reset = () => {
-    sound.playClick();
-    setAnswers({});
-    setSubmitted(false);
-    setCopied('idle');
   };
 
   const summary = useMemo(() => {
@@ -155,9 +157,9 @@ export const PracticeStage: React.FC<PracticeStageProps> = ({ name, kelas, stage
       'HASIL BELAJAR BILANGAN BULAT (Media Sungai Musi)',
       `Nama  : ${name || '-'}`,
       `Kelas : ${kelas || '-'}`,
-      `Waktu : ${new Date().toLocaleString('id-ID')}`,
+      `Waktu : ${submittedAt ?? '-'}`,
       '',
-      'Tahap belajar (benar pada percobaan pertama):',
+      'Tahap belajar (jawaban benar):',
       ...(['tp1', 'tp2', 'tp3'] as TpKey[]).map((tp) => {
         const s = stageScores[tp];
         return `- ${TP_LABEL[tp]}: ${s ? `${s.correct}/${s.total}` : 'belum dikerjakan'}`;
@@ -170,7 +172,7 @@ export const PracticeStage: React.FC<PracticeStageProps> = ({ name, kelas, stage
       ...REFLECTIONS.map((r, i) => `${i + 1}. ${r}\n   Jawaban: ${reflections[i].trim() || '-'}`),
     ];
     return lines.join('\n');
-  }, [name, kelas, stageScores, perTp, totalCorrect, reflections]);
+  }, [name, kelas, submittedAt, stageScores, perTp, totalCorrect, reflections]);
 
   const copySummary = async () => {
     sound.playClick();
@@ -191,7 +193,7 @@ export const PracticeStage: React.FC<PracticeStageProps> = ({ name, kelas, stage
         <h2 className="text-lg sm:text-xl font-extrabold text-slate-100">Latihan Penguatan untuk Ketiga TP</h2>
         <p className="text-xs sm:text-sm text-slate-300">
           Jawab semua soal tanpa bantuan garis bilangan di layar. Gambarlah garis bilangan sendiri di kertas atau LKPD jika
-          perlu. Setelah dikumpulkan, kamu akan melihat skor untuk setiap TP.
+          perlu. Setelah dikumpulkan, jawaban terkunci dan kamu akan melihat skor untuk setiap TP.
         </p>
       </div>
 
@@ -218,9 +220,9 @@ export const PracticeStage: React.FC<PracticeStageProps> = ({ name, kelas, stage
                     {perTp[tp].correct}/{perTp[tp].total}
                   </span>
                   {!ok && (
-                    <button onClick={() => onGoTo(tp)} className="block mt-1 text-xs font-semibold text-amber-300 underline">
-                      Ulangi tahap {tp.toUpperCase()}
-                    </button>
+                    <span className="block mt-1 text-xs font-semibold text-amber-300">
+                      Perlu dipelajari lagi: baca pembahasan soal {TP_LABEL[tp].split(' · ')[0]} di bawah.
+                    </span>
                   )}
                 </div>
               );
@@ -283,13 +285,10 @@ export const PracticeStage: React.FC<PracticeStageProps> = ({ name, kelas, stage
             : `Jawab semua soal dulu (${Object.keys(answers).length}/${QUESTIONS.length})`}
         </button>
       ) : (
-        <button
-          onClick={reset}
-          className="w-full flex items-center justify-center gap-2 py-2.5 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-slate-200 font-semibold text-sm"
-        >
-          <RotateCcw className="w-4 h-4 text-amber-400" />
-          <span>Kerjakan latihan lagi</span>
-        </button>
+        <p className="text-xs text-slate-400 flex items-center justify-center gap-1.5">
+          <Lock className="w-3.5 h-3.5" />
+          Jawaban latihan sudah dikumpulkan pada {submittedAt} dan terkunci.
+        </p>
       )}
 
       {submitted && (

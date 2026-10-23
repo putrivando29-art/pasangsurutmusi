@@ -9,6 +9,7 @@ import { OrderStage } from './components/OrderStage';
 import { PracticeStage } from './components/PracticeStage';
 import type { ScoreBoard, StageId, StageScore, TpKey } from './types';
 import { sound } from './utils/audio';
+import { usePersistentState } from './utils/storage';
 
 const STAGES: { id: StageId; short: string; title: string }[] = [
   { id: 'orientasi', short: 'Mulai', title: 'Orientasi' },
@@ -18,42 +19,31 @@ const STAGES: { id: StageId; short: string; title: string }[] = [
   { id: 'latihan', short: 'Akhir', title: 'Latihan' },
 ];
 
-const STORAGE_KEY = 'bilangan-bulat-musi-v2';
-
-interface Saved {
-  stage: StageId;
-  name: string;
-  kelas: string;
-  scores: ScoreBoard;
-}
-
 const EMPTY_SCORES: ScoreBoard = { tp1: null, tp2: null, tp3: null };
 
-const load = (): Saved | null => {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as Saved) : null;
-  } catch {
-    return null;
-  }
-};
-
 export default function App() {
-  const saved = load();
   const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
   const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
-  const [stage, setStage] = useState<StageId>(saved?.stage ?? 'orientasi');
-  const [name, setName] = useState(saved?.name ?? '');
-  const [kelas, setKelas] = useState(saved?.kelas ?? '');
-  const [scores, setScores] = useState<ScoreBoard>(saved?.scores ?? EMPTY_SCORES);
+  const [stage, setStage] = usePersistentState<StageId>('tahap', 'orientasi');
+  const [name, setName] = usePersistentState('nama', '');
+  const [kelas, setKelas] = usePersistentState('kelas', '');
+  const [scores, setScores] = usePersistentState<ScoreBoard>('skor', EMPTY_SCORES);
 
+  // Nama dan kelas wajib diisi sebelum mengerjakan soal, karena keduanya menjadi
+  // identitas pada ringkasan hasil yang dikirim ke Google Classroom.
+  const ready = name.trim() !== '' && kelas.trim() !== '';
+
+  // Peramban menampilkan peringatan bawaannya saat murid menutup tab, memuat ulang,
+  // atau berpindah alamat. Kemajuan tetap tersimpan walaupun murid tetap keluar.
   useEffect(() => {
-    try {
-      localStorage.setItem(STORAGE_KEY, JSON.stringify({ stage, name, kelas, scores } satisfies Saved));
-    } catch {
-      // Penyimpanan tidak tersedia (mode privat), media tetap berjalan tanpa menyimpan kemajuan.
-    }
-  }, [stage, name, kelas, scores]);
+    if (!ready) return;
+    const warn = (e: BeforeUnloadEvent) => {
+      e.preventDefault();
+      e.returnValue = '';
+    };
+    window.addEventListener('beforeunload', warn);
+    return () => window.removeEventListener('beforeunload', warn);
+  }, [ready]);
 
   const handleToggleSound = () => {
     const newState = !soundEnabled;
@@ -81,9 +71,12 @@ export default function App() {
         <ol className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 grid grid-cols-5 gap-1.5">
           {STAGES.map((s) => {
             const active = s.id === stage;
+            const locked = s.id !== 'orientasi' && !ready;
             return (
               <li key={s.id}>
                 <button
+                  disabled={locked}
+                  title={locked ? 'Isi nama dan kelas di tahap Mulai terlebih dahulu' : undefined}
                   onClick={() => {
                     sound.playClick();
                     goTo(s.id);
@@ -92,7 +85,7 @@ export default function App() {
                   className={`w-full rounded-xl border px-1.5 py-1.5 text-center transition-colors ${
                     active
                       ? 'bg-amber-400 border-amber-300 text-slate-950'
-                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800'
+                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900'
                   }`}
                 >
                   <span className="flex items-center justify-center gap-1 text-[11px] font-bold">
@@ -108,10 +101,11 @@ export default function App() {
       </nav>
 
       <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 sm:py-6">
-        {stage === 'orientasi' && (
+        {(stage === 'orientasi' || !ready) && (
           <OrientationStage
             name={name}
             kelas={kelas}
+            ready={ready}
             onIdentity={(n, k) => {
               setName(n);
               setKelas(k);
@@ -119,10 +113,10 @@ export default function App() {
             onContinue={() => goTo('tp1')}
           />
         )}
-        {stage === 'tp1' && <LocateStage onComplete={saveScore('tp1')} onContinue={() => goTo('tp2')} />}
-        {stage === 'tp2' && <CompareStage onComplete={saveScore('tp2')} onContinue={() => goTo('tp3')} />}
-        {stage === 'tp3' && <OrderStage onComplete={saveScore('tp3')} onContinue={() => goTo('latihan')} />}
-        {stage === 'latihan' && <PracticeStage name={name} kelas={kelas} stageScores={scores} onGoTo={goTo} />}
+        {ready && stage === 'tp1' && <LocateStage onComplete={saveScore('tp1')} onContinue={() => goTo('tp2')} />}
+        {ready && stage === 'tp2' && <CompareStage onComplete={saveScore('tp2')} onContinue={() => goTo('tp3')} />}
+        {ready && stage === 'tp3' && <OrderStage onComplete={saveScore('tp3')} onContinue={() => goTo('latihan')} />}
+        {ready && stage === 'latihan' && <PracticeStage name={name} kelas={kelas} stageScores={scores} />}
       </main>
 
       <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />

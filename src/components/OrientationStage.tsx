@@ -8,6 +8,7 @@ import { sound } from '../utils/audio';
 interface OrientationStageProps {
   name: string;
   kelas: string;
+  ready: boolean;
   onIdentity: (name: string, kelas: string) => void;
   onContinue: () => void;
 }
@@ -32,8 +33,8 @@ const ALUR = [
     tahap: 'TP 1: Letak',
     waktu: '25 menit',
     langkah: [
-      'Klik posisi bilangan pada papan duga atau garis bilangan, lalu tekan Periksa.',
-      'Pada soal membaca titik, pilih bilangan yang ditunjukkan titik merah.',
+      'Klik posisi bilangan pada papan duga atau garis bilangan, lalu tekan Kunci jawaban.',
+      'Pada soal membaca titik, pilih bilangan yang ditunjukkan titik merah, lalu kunci.',
       'Kerjakan 7 soal, lalu catat skornya di LKPD.',
     ],
   },
@@ -42,7 +43,7 @@ const ALUR = [
     waktu: '30 menit',
     langkah: [
       'Amati dua titik pada garis bilangan.',
-      'Pilih simbol <, =, atau >, lalu pilih alasan yang tepat.',
+      'Pilih dan kunci simbol <, =, atau >. Jika simbolnya benar, pilih dan kunci alasannya.',
       'Kerjakan 7 soal, lalu tulis tiga kalimat perbandingan di LKPD.',
     ],
   },
@@ -50,7 +51,7 @@ const ALUR = [
     tahap: 'TP 3: Urutkan',
     waktu: '25 menit',
     langkah: [
-      'Ketuk kartu bilangan sesuai urutan yang diminta, lalu tekan Periksa urutan.',
+      'Ketuk kartu bilangan sesuai urutan yang diminta, lalu tekan Kunci urutan.',
       'Jika perlu, tekan Tampilkan di garis bilangan.',
       'Kerjakan 4 soal, lalu salin satu urutan ke LKPD.',
     ],
@@ -59,14 +60,14 @@ const ALUR = [
     tahap: 'Akhir',
     waktu: '25 menit',
     langkah: [
-      'Jawab 9 soal latihan, lalu tekan Kumpulkan jawaban.',
+      'Jawab 9 soal latihan, periksa lagi, lalu tekan Kumpulkan jawaban.',
       'Isi 3 pertanyaan refleksi.',
       'Tekan Salin hasil, lalu tempel di tugas Google Classroom.',
     ],
   },
 ];
 
-export const OrientationStage: React.FC<OrientationStageProps> = ({ name, kelas, onIdentity, onContinue }) => {
+export const OrientationStage: React.FC<OrientationStageProps> = ({ name, kelas, ready, onIdentity, onContinue }) => {
   const [level, setLevel] = useState(-2);
 
   const choose = (lvl: number) => {
@@ -105,12 +106,11 @@ export const OrientationStage: React.FC<OrientationStageProps> = ({ name, kelas,
         <div className="lg:col-span-5 bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-3">
           <h3 className="text-sm font-bold text-slate-100">Sebelum mulai</h3>
           <ul className="list-disc list-inside text-sm text-slate-300 space-y-1.5">
-            <li>Siapkan LKPD dari Google Classroom. Website dan LKPD dipakai bersama.</li>
             <li>Tahap dapat dipilih dari baris di atas. Tanda centang berarti tahap itu sudah selesai.</li>
-            <li>Jawaban pertama setiap soal dicatat sebagai bukti belajarmu. Kamu tetap boleh mencoba lagi sampai benar.</li>
-            <li>Jangan memuat ulang halaman di tahap Akhir sebelum ringkasan hasil disalin.</li>
+            <li>Setiap soal hanya dapat dijawab satu kali. Setelah kamu menekan tombol kunci, jawaban tidak bisa diubah, jadi kerjakan dengan teliti.</li>
+            <li>Jangan menutup atau memuat ulang halaman selama mengerjakan. Jika halaman tertutup tanpa sengaja, buka lagi di peramban yang sama: jawabanmu tetap tersimpan.</li>
           </ul>
-          <p className="text-xs text-slate-400">Tulis nama dan kelasmu. Keduanya ikut tercantum di ringkasan hasil.</p>
+          <p className="text-xs text-slate-400">Wajib diisi sebelum mulai. Nama dan kelas ikut tercantum di ringkasan hasil.</p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <label className="sm:col-span-2 block">
               <span className="text-xs font-semibold text-slate-400">Nama lengkap</span>
@@ -226,13 +226,14 @@ export const OrientationStage: React.FC<OrientationStageProps> = ({ name, kelas,
         </p>
 
         <button
+          disabled={!ready}
           onClick={() => {
             sound.playClick();
             onContinue();
           }}
-          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 text-white font-bold text-sm"
+          className="w-full flex items-center justify-center gap-2 py-3 px-4 rounded-xl bg-red-600 hover:bg-red-500 disabled:bg-slate-800 disabled:text-slate-500 text-white font-bold text-sm"
         >
-          <span>Mulai Tahap 1: Menentukan Letak</span>
+          <span>{ready ? 'Mulai Tahap 1: Menentukan Letak' : 'Isi nama dan kelas terlebih dahulu'}</span>
           <ArrowRight className="w-4 h-4" />
         </button>
       </div>

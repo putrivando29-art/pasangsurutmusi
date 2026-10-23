@@ -17,12 +17,12 @@ Tahap di website: Mulai (Orientasi)
 Tujuan yang dilayani: menyiapkan pemahaman awal untuk TP 1, TP 2, dan TP 3
 
 Langkah murid:
-1. Menuliskan nama lengkap dan kelas pada kolom yang tersedia. Data ini dipakai lagi di ringkasan hasil pada akhir pembelajaran.
-2. Membaca tiga tujuan pembelajaran, empat catatan "Sebelum mulai", dan kotak "Alur pengerjaan". Kotak itu memuat lima langkah beserta waktunya:
+1. Menuliskan nama lengkap dan kelas pada kolom yang tersedia. Keduanya wajib diisi: tahap TP 1 sampai Akhir dan tombol mulai baru aktif setelah nama dan kelas terisi. Data ini dipakai lagi di ringkasan hasil pada akhir pembelajaran.
+2. Membaca tiga tujuan pembelajaran, tiga catatan "Sebelum mulai" (cara memilih tahap, setiap soal hanya dapat dijawab satu kali, dan larangan menutup atau memuat ulang halaman), serta kotak "Alur pengerjaan". Kotak itu memuat lima langkah beserta waktunya:
    a. Mulai (15 menit): mengisi nama dan kelas, membaca TP, lalu mengklik papan duga dan mengamati titik pada garis bilangan.
-   b. TP 1: Letak (25 menit): mengklik posisi bilangan lalu menekan Periksa, memilih bilangan pada soal membaca titik, mengerjakan 7 soal, lalu mencatat skor di LKPD.
-   c. TP 2: Bandingkan (30 menit): mengamati dua titik, memilih simbol lalu alasannya, mengerjakan 7 soal, lalu menulis tiga kalimat perbandingan di LKPD.
-   d. TP 3: Urutkan (25 menit): mengetuk kartu sesuai urutan lalu menekan Periksa urutan, memakai bantuan garis bilangan jika perlu, mengerjakan 4 soal, lalu menyalin satu urutan ke LKPD.
+   b. TP 1: Letak (25 menit): mengklik posisi bilangan lalu menekan Kunci jawaban, memilih dan mengunci bilangan pada soal membaca titik, mengerjakan 7 soal, lalu mencatat skor di LKPD.
+   c. TP 2: Bandingkan (30 menit): mengamati dua titik, memilih dan mengunci simbol, lalu memilih dan mengunci alasannya jika simbolnya benar, mengerjakan 7 soal, lalu menulis tiga kalimat perbandingan di LKPD.
+   d. TP 3: Urutkan (25 menit): mengetuk kartu sesuai urutan lalu menekan Kunci urutan, memakai bantuan garis bilangan jika perlu, mengerjakan 4 soal, lalu menyalin satu urutan ke LKPD.
    e. Akhir (25 menit): menjawab 9 soal latihan, mengisi 3 pertanyaan refleksi, lalu menyalin hasil ke tugas Google Classroom.
 3. Mengklik angka pada papan duga di sisi kanan gambar Sungai Musi, atau mengklik tombol angka -5 sampai +5 di bawah gambar.
 4. Mengamati tiga perubahan sekaligus: permukaan air pada gambar naik atau turun, papan duga menunjukkan ketinggian yang dipilih, dan sebuah titik berpindah pada garis bilangan mendatar di bawahnya.
@@ -42,14 +42,14 @@ Tujuan yang dilayani: TP 1
 Langkah murid:
 1. Membaca soal, misalnya "Air sedang surut, permukaannya 3 meter di bawah titik acuan."
 2. Mengklik angka pada papan duga. Permukaan air pada gambar langsung berpindah ke angka yang dipilih.
-3. Menekan tombol "Periksa".
-4. Membaca umpan balik, lalu menekan "Soal berikutnya" setelah jawabannya benar.
+3. Memeriksa ulang pilihannya, lalu menekan tombol "Kunci jawaban". Sebelum dikunci, pilihan masih boleh diganti. Setelah dikunci, jawaban tidak dapat diubah.
+4. Membaca umpan balik, lalu menekan "Soal berikutnya".
 
 Umpan balik website:
 1. Jika benar: "Tepat. Bilangan -3 terletak 3 langkah di bawah titik 0."
 2. Jika jarak dari 0 benar tetapi arahnya terbalik (misalnya memilih +3 untuk surut 3 m): murid diberi tahu bahwa arahnya terbalik dan bilangan negatif ada di bawah titik 0.
-3. Jika selisihnya satu langkah: murid diminta menghitung ulang lompatan satu per satu dari 0.
-4. Jika salah dua kali: website menampilkan jawaban yang benar dan meminta murid memilih posisi itu untuk melanjutkan.
+3. Jika selisihnya satu langkah: murid diingatkan untuk menghitung lompatan satu per satu dari 0 atau dari angka yang tertulis.
+4. Setiap jawaban salah langsung disertai jawaban yang benar beserta letaknya, misalnya "Bilangan -3 terletak 3 langkah di bawah titik 0".
 
 Hasil yang diharapkan: murid dapat menerjemahkan kata "di atas" dan "di bawah" titik acuan menjadi bilangan positif dan negatif serta menempatkannya dengan tepat.
 
@@ -68,11 +68,11 @@ Langkah murid untuk soal membaca titik (soal 3 dan 6):
 Langkah murid untuk soal menempatkan (soal 4, 5, dan 7):
 1. Membaca bilangan yang harus ditempatkan, yaitu -8, 7, dan -1.
 2. Mengklik turus (garis kecil) pada garis bilangan. Di layar HP, garis bilangan dapat digeser ke kiri dan ke kanan.
-3. Menekan tombol "Periksa".
+3. Menekan tombol "Kunci jawaban". Pada soal membaca titik, murid memilih salah satu bilangan lalu menekan tombol yang sama.
 
 Umpan balik website sama dengan Aktivitas 2. Bedanya, arah yang disebut adalah kiri dan kanan, bukan bawah dan atas. Setelah benar, titik jawaban ditandai hijau dengan angkanya.
 
-Penutup tahap: website menampilkan skor "benar pada percobaan pertama" (misalnya 5/7). Murid diminta mencatat skor itu di LKPD. Murid dapat memilih "Ulangi tahap ini" atau "Lanjut ke Tahap 2: Membandingkan".
+Penutup tahap: website menampilkan jumlah jawaban benar (misalnya 5/7) dan keterangan bahwa tahap sudah terkunci. Murid diminta mencatat skor itu di LKPD dan membaca kembali pembahasan soal yang salah, lalu menekan "Lanjut ke Tahap 2: Membandingkan". Tahap yang sudah selesai tidak dapat dikerjakan ulang.
 
 Hasil yang diharapkan: murid dapat menentukan letak bilangan bulat pada garis bilangan walaupun tidak semua angka tertulis (bukti ketercapaian TP 1).
 
@@ -93,13 +93,14 @@ Langkah murid:
 1. Membaca konteks, misalnya "Pukul 06.00 air tercatat -3 m, pukul 12.00 tercatat -1 m."
 2. Mengamati garis bilangan. Titik pertama berwarna merah dan titik kedua berwarna biru, masing-masing diberi label waktu atau hari.
 3. Memilih salah satu tombol simbol: < (kurang dari), = (sama dengan), atau > (lebih dari). Simbol yang dipilih langsung muncul di antara kedua bilangan.
+4. Menekan "Kunci simbol". Jika simbolnya salah, soal itu selesai dan dihitung salah. Jika benar, murid lanjut ke Aktivitas 5.
 
 Ketujuh soal disusun agar mencakup semua jenis pasangan: dua bilangan negatif (-3 dan -1, -5 dan -2, -1 dan -4), positif dengan negatif (+2 dan -4), nol dengan negatif (0 dan -5), dua bilangan sama (-4 dan -4), serta dua bilangan positif (+1 dan +4).
 
-Umpan balik website jika simbol salah:
+Umpan balik website jika simbol salah (selalu disertai jawaban yang benar, letak kedua titik, dan cara membaca kalimatnya):
 1. Jika murid membandingkan angka tanpa tanda (misalnya memilih -5 > -2 karena 5 > 2): website menyebut kesalahan itu secara langsung dan mengingatkan bahwa bilangan yang letaknya lebih ke kanan nilainya lebih besar, termasuk sesama bilangan negatif.
 2. Jika murid memilih = untuk dua bilangan yang berbeda: website mengingatkan bahwa dua bilangan sama besar hanya jika titiknya berimpit.
-3. Jika salah dua kali: website memberi petunjuk letak, misalnya "titik 06.00 (-3) berada di sebelah kiri titik 12.00 (-1)".
+3. Website menunjukkan letak kedua titik, misalnya "titik 06.00 (-3) berada di sebelah kiri titik 12.00 (-1)".
 
 
 ## Aktivitas 5: Memberi Alasan Perbandingan
@@ -116,10 +117,11 @@ Langkah murid:
    b. menganggap bilangan yang lebih jauh dari 0 selalu lebih besar;
    c. untuk soal dua bilangan positif, pengecohnya adalah "keduanya positif jadi sama besar" dan "yang lebih dekat ke 0 lebih besar";
    d. untuk soal dua bilangan sama, pengecohnya adalah "semua bilangan negatif sama besar".
-3. Jika alasan salah, murid membaca contoh penyangkal. Contohnya, -9 dan -1: angka 9 lebih besar dari 1 dan -9 lebih jauh dari 0, padahal -9 < -1. Setelah itu murid memilih lagi.
-4. Jika alasan benar, website menampilkan kalimat perbandingan, cara membacanya, dan artinya dalam konteks. Contoh: "-3 < -1, dibaca -3 kurang dari -1. Artinya ketinggian air 06.00 lebih rendah daripada ketinggian air 12.00."
+3. Menekan "Kunci alasan". Alasan yang sudah dikunci tidak dapat diganti.
+4. Jika alasan salah, alasan yang benar ditandai hijau dan murid membaca contoh penyangkal. Contohnya, -9 dan -1: angka 9 lebih besar dari 1 dan -9 lebih jauh dari 0, padahal -9 < -1.
+5. Jika alasan benar, website menampilkan kalimat perbandingan, cara membacanya, dan artinya dalam konteks. Contoh: "-3 < -1, dibaca -3 kurang dari -1. Artinya ketinggian air 06.00 lebih rendah daripada ketinggian air 12.00."
 
-Penilaian: satu soal dihitung benar jika simbol dan alasannya benar pada percobaan pertama.
+Penilaian: satu soal dihitung benar jika simbol dan alasannya sama-sama benar.
 
 Penutup tahap: website menampilkan skor tahap. Murid diminta menulis tiga kalimat perbandingan dari tahap ini beserta cara membacanya di LKPD, lalu melanjutkan ke Tahap 3.
 
@@ -142,15 +144,15 @@ Soal yang dikerjakan:
 Langkah murid:
 1. Membaca arah urutan yang diminta. Arah itu ditandai warna kuning pada soal.
 2. Mengetuk kartu bilangan satu per satu. Kartu yang diketuk masuk ke baris "Urutanmu", dan di antara kotak urutan sudah tertulis simbol < atau > sesuai arah soal.
-3. Jika salah menaruh kartu, mengetuk kartu di baris urutan untuk mengeluarkannya, atau menekan "Kosongkan urutan".
+3. Jika salah menaruh kartu sebelum dikunci, mengetuk kartu di baris urutan untuk mengeluarkannya, atau menekan "Kosongkan urutan".
 4. Bila perlu, menekan "Tampilkan di garis bilangan" untuk melihat semua bilangan sebagai titik pada garis bilangan.
-5. Menekan "Periksa urutan" setelah semua kartu masuk.
+5. Menekan "Kunci urutan" setelah semua kartu masuk. Urutan yang sudah dikunci tidak dapat diubah.
 
 Umpan balik website:
 1. Kartu di posisi benar berwarna hijau dan kartu di posisi salah berwarna merah.
 2. Jika urutannya terbalik: murid diberi tahu arah yang diminta soal. Pada soal yang semua bilangannya negatif, murid juga diingatkan bahwa angka yang tampak besar (misalnya 5 pada -5) justru bernilai paling kecil.
 3. Jika murid mengurutkan angka tanpa memperhatikan tanda: murid diingatkan bahwa bilangan negatif selalu lebih kecil daripada 0 dan bilangan positif.
-4. Jika salah dua kali: website menampilkan urutan yang benar.
+4. Setiap urutan yang salah langsung disertai urutan yang benar.
 5. Jika benar: website menampilkan rantai perbandingan, misalnya "-3 < -1 < 0 < +2", dan menjelaskan bahwa urutan terkecil ke terbesar sama dengan membaca titik dari kiri ke kanan.
 
 Penutup tahap: website menampilkan skor tahap. Murid diminta menyalin satu urutan ke LKPD dalam bentuk rantai simbol, lalu melanjutkan ke Latihan Penguatan.
@@ -173,9 +175,9 @@ Isi soal:
 Langkah murid:
 1. Membaca petunjuk: jika perlu, menggambar garis bilangan sendiri di kertas atau LKPD.
 2. Memilih jawaban untuk semua soal. Tombol "Kumpulkan jawaban" baru aktif setelah kesembilan soal dijawab.
-3. Menekan "Kumpulkan jawaban".
+3. Menekan "Kumpulkan jawaban", lalu menyetujui pesan konfirmasi bahwa jawaban tidak dapat diubah setelah dikumpulkan. Sebelum dikumpulkan, pilihan jawaban masih boleh diganti.
 4. Membaca hasil: skor total, skor untuk setiap TP, tanda benar atau salah pada setiap pilihan, dan penjelasan setiap soal.
-5. Jika skor suatu TP kurang dari 2 dari 3, menekan tautan "Ulangi tahap TP" yang muncul pada kotak TP tersebut. Murid boleh juga mengerjakan latihan lagi.
+5. Jika skor suatu TP kurang dari 2 dari 3, kotak TP itu ditandai "Perlu dipelajari lagi" dan murid diminta membaca pembahasan soal TP tersebut. Latihan tidak dapat dikerjakan ulang.
 
 Hasil yang diharapkan: murid dan guru mengetahui TP mana yang sudah dikuasai dan mana yang perlu diulang.
 
@@ -195,9 +197,9 @@ Langkah murid:
 2. Menekan "Salin hasil untuk Google Classroom". Jika peramban menolak penyalinan otomatis, murid memilih teks ringkasan secara manual lalu menyalinnya.
 3. Membuka tugas di Google Classroom dan menempelkan ringkasan sebagai jawaban atau komentar pribadi.
 
-Isi ringkasan yang diterima guru: nama, kelas, waktu pengerjaan, skor tahap TP 1 sampai TP 3 (percobaan pertama), skor latihan per TP, serta jawaban ketiga pertanyaan refleksi.
+Isi ringkasan yang diterima guru: nama, kelas, waktu pengerjaan, skor tahap TP 1 sampai TP 3, skor latihan per TP, serta jawaban ketiga pertanyaan refleksi.
 
-Hal yang perlu diingatkan kepada murid: jawaban latihan dan refleksi tidak tersimpan otomatis. Jika halaman dimuat ulang sebelum ringkasan disalin, isinya hilang. Nama, kelas, tahap terakhir, dan skor tahap tetap tersimpan di peramban yang sama.
+Hal yang perlu diingatkan kepada murid: semua jawaban, skor, dan refleksi tersimpan otomatis di peramban yang dipakai. Jika halaman tertutup atau termuat ulang, murid cukup membuka tautan yang sama di peramban yang sama untuk melanjutkan. Jawaban tidak akan terbawa jika murid berganti perangkat, berganti peramban, atau memakai mode penyamaran (incognito).
 
 Hasil yang diharapkan: guru memperoleh bukti ketercapaian setiap TP dan gambaran pemahaman murid tanpa harus bertatap muka.
 

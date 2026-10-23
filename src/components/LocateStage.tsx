@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { AmperaCanvas } from './AmperaCanvas';
-import { NumberLine } from './NumberLine';
-import { Feedback, ItemProgress, NextButton, StageHeader, StageSummary, useItemFlow } from './StageShell';
+import { NumberLine, type NumberLinePoint } from './NumberLine';
+import { Feedback, ItemProgress, LockButton, LockNotice, NextButton, StageHeader, StageSummary, useLockedFlow } from './StageShell';
 import type { LocateItem, StageScore } from '../types';
 import { fmt } from '../utils/number';
 import { sound } from '../utils/audio';
@@ -69,7 +69,7 @@ const diagnose = (target: number, picked: number): string => {
     return `Jaraknya dari 0 sudah tepat, tetapi arahnya terbalik. Bilangan ${target < 0 ? 'negatif ada di bawah/kiri' : 'positif ada di atas/kanan'} titik 0.`;
   }
   if (Math.abs(picked - target) === 1) {
-    return 'Hampir tepat, selisihnya satu langkah. Hitung ulang lompatan satu per satu mulai dari 0 atau dari angka yang tertulis.';
+    return 'Selisihnya satu langkah. Biasakan menghitung lompatan satu per satu mulai dari 0 atau dari angka yang tertulis.';
   }
   return 'Mulailah dari titik 0. Bilangan positif ke atas/kanan, bilangan negatif ke bawah/kiri, satu langkah untuk setiap satuan.';
 };
@@ -80,35 +80,43 @@ interface LocateStageProps {
 }
 
 export const LocateStage: React.FC<LocateStageProps> = ({ onComplete, onContinue }) => {
-  const flow = useItemFlow(ITEMS.length);
+  const flow = useLockedFlow<number>('tp1', ITEMS.length);
   const item = ITEMS[flow.idx];
   const [picked, setPicked] = useState<number | null>(null);
-  const [lastWrong, setLastWrong] = useState<number | null>(null);
 
   useEffect(() => {
     setPicked(null);
-    setLastWrong(null);
-  }, [flow.idx, flow.finished]);
+  }, [flow.idx]);
 
   useEffect(() => {
     if (flow.finished) onComplete(flow.score);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flow.finished]);
 
-  const check = (value: number) => {
-    const correct = value === item.target;
-    flow.record(correct);
-    setLastWrong(correct ? null : value);
-  };
+  // Setelah dikunci, yang ditampilkan adalah jawaban tersimpan, bukan pilihan sementara.
+  const shown = flow.done ? flow.answer : picked;
+  const correct = flow.result === true;
 
   const pick = (value: number) => {
-    if (flow.solved) return;
+    if (flow.done) return;
     sound.playWaterSplash();
     setPicked(value);
-    setLastWrong(null);
   };
 
-  const showAnswer = flow.attempts >= 2 && !flow.solved;
+  const lock = () => {
+    if (picked === null) return;
+    flow.save(picked, picked === item.target);
+  };
+
+  const linePoints = (): NumberLinePoint[] => {
+    if (!flow.done) return picked !== null ? [{ value: picked, tone: 'neutral' }] : [];
+    const points: NumberLinePoint[] = [{ value: item.target, label: fmt(item.target), tone: 'ok' }];
+    if (!correct && flow.answer !== null) points.push({ value: flow.answer, label: 'pilihanmu', tone: 'bad' });
+    return points;
+  };
+
+  const where =
+    item.target < 0 ? (item.line === 'tegak' ? 'bawah' : 'kiri') : item.line === 'tegak' ? 'atas' : 'kanan';
 
   return (
     <div className="space-y-5">
@@ -128,10 +136,9 @@ export const LocateStage: React.FC<LocateStageProps> = ({ onComplete, onContinue
       {flow.finished ? (
         <StageSummary
           score={flow.score}
-          message="Catat skor ini di LKPD-mu. Jika masih ada yang salah, ulangi tahap ini sebelum lanjut, karena membandingkan dan mengurutkan bergantung pada letak bilangan yang tepat."
+          message="Catat skor ini di LKPD-mu. Baca kembali pembahasan soal yang salah, karena membandingkan dan mengurutkan bergantung pada letak bilangan yang tepat."
           nextLabel="Lanjut ke Tahap 2: Membandingkan"
           onNext={onContinue}
-          onRetry={flow.restart}
         />
       ) : (
         <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
@@ -141,15 +148,17 @@ export const LocateStage: React.FC<LocateStageProps> = ({ onComplete, onContinue
           {item.line === 'tegak' ? (
             <div className="space-y-3">
               <AmperaCanvas
-                waterLevel={picked ?? 0}
-                interactiveGauge={!flow.solved}
+                waterLevel={shown ?? 0}
+                interactiveGauge={!flow.done}
                 onSelectLevel={pick}
                 showClearanceInfo={false}
                 locationName="Papan duga · Sungai Musi"
               />
-              <p className="text-xs text-slate-400">
-                Klik angka pada papan duga di sisi kanan gambar. Permukaan air akan berpindah ke posisi yang kamu pilih.
-              </p>
+              {!flow.done && (
+                <p className="text-xs text-slate-400">
+                  Klik angka pada papan duga di sisi kanan gambar. Permukaan air akan berpindah ke posisi yang kamu pilih.
+                </p>
+              )}
             </div>
           ) : item.mode === 'tempatkan' ? (
             <div className="bg-slate-950 border border-slate-800 rounded-xl p-2 sm:p-3">
@@ -157,18 +166,14 @@ export const LocateStage: React.FC<LocateStageProps> = ({ onComplete, onContinue
                 min={-10}
                 max={10}
                 labels="sparse"
-                onPick={flow.solved ? undefined : pick}
-                picked={picked}
-                points={
-                  flow.solved || showAnswer
-                    ? [{ value: item.target, label: fmt(item.target), tone: 'ok' }]
-                    : picked !== null
-                    ? [{ value: picked, tone: 'neutral' }]
-                    : []
-                }
+                onPick={flow.done ? undefined : pick}
+                picked={flow.done ? null : picked}
+                points={linePoints()}
                 ariaLabel="Garis bilangan dari -10 sampai 10, klik untuk menempatkan bilangan"
               />
-              <p className="text-xs text-slate-400 px-1">Klik garis tegak kecil (turus) tempat bilangan itu berada.</p>
+              {!flow.done && (
+                <p className="text-xs text-slate-400 px-1">Klik garis tegak kecil (turus) tempat bilangan itu berada.</p>
+              )}
             </div>
           ) : (
             <div className="space-y-3">
@@ -177,59 +182,65 @@ export const LocateStage: React.FC<LocateStageProps> = ({ onComplete, onContinue
                   min={-10}
                   max={10}
                   labels="sparse"
-                  points={[{ value: item.target, tone: 'a', label: flow.solved || showAnswer ? fmt(item.target) : '?' }]}
+                  points={[{ value: item.target, tone: 'a', label: flow.done ? fmt(item.target) : '?' }]}
                 />
               </div>
               <div className="grid grid-cols-2 sm:grid-cols-4 gap-2">
-                {readOptions(item.target).map((opt) => (
-                  <button
-                    key={opt}
-                    disabled={flow.solved}
-                    onClick={() => {
-                      sound.playClick();
-                      setPicked(opt);
-                      check(opt);
-                    }}
-                    className={`py-3 rounded-xl border-2 font-mono font-extrabold text-lg transition-all ${
-                      picked === opt
-                        ? opt === item.target
-                          ? 'bg-emerald-900 border-emerald-400 text-white'
-                          : 'bg-rose-900 border-rose-400 text-white'
-                        : 'bg-slate-800 border-slate-700 text-slate-100 hover:border-slate-500 disabled:opacity-50'
-                    }`}
-                  >
-                    {fmt(opt)}
-                  </button>
-                ))}
+                {readOptions(item.target).map((opt) => {
+                  const isShown = shown === opt;
+                  const style = !flow.done
+                    ? isShown
+                      ? 'bg-cyan-900 border-cyan-400 text-white'
+                      : 'bg-slate-800 border-slate-700 text-slate-100 hover:border-slate-500'
+                    : opt === item.target
+                    ? 'bg-emerald-900 border-emerald-400 text-white'
+                    : isShown
+                    ? 'bg-rose-900 border-rose-400 text-white'
+                    : 'bg-slate-900 border-slate-800 text-slate-500';
+                  return (
+                    <button
+                      key={opt}
+                      disabled={flow.done}
+                      aria-pressed={isShown}
+                      onClick={() => {
+                        sound.playClick();
+                        setPicked(opt);
+                      }}
+                      className={`py-3 rounded-xl border-2 font-mono font-extrabold text-lg transition-all ${style}`}
+                    >
+                      {fmt(opt)}
+                    </button>
+                  );
+                })}
               </div>
             </div>
           )}
 
-          {item.mode === 'tempatkan' && !flow.solved && (
-            <button
-              disabled={picked === null}
-              onClick={() => picked !== null && check(picked)}
-              className="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 font-bold text-sm"
-            >
-              {picked === null ? 'Pilih posisi terlebih dahulu' : `Periksa: ${fmt(picked)}`}
-            </button>
+          {!flow.done && (
+            <>
+              <LockNotice />
+              <LockButton
+                disabled={picked === null}
+                onClick={lock}
+                label={picked === null ? 'Pilih jawaban terlebih dahulu' : `Kunci jawaban: ${fmt(picked)}`}
+              />
+            </>
           )}
 
-          {flow.solved && (
-            <Feedback tone="ok" title={`Tepat. Bilangan ${fmt(item.target)} terletak ${Math.abs(item.target)} langkah di ${item.target < 0 ? (item.line === 'tegak' ? 'bawah' : 'kiri') : item.line === 'tegak' ? 'atas' : 'kanan'} titik 0.`} />
-          )}
-          {lastWrong !== null && !flow.solved && (
-            <Feedback tone="bad" title={`Belum tepat. Kamu memilih ${fmt(lastWrong)}.`}>
-              {diagnose(item.target, lastWrong)}
-              {showAnswer && (
-                <span className="block mt-1 text-amber-200">
-                  Jawaban yang benar adalah {fmt(item.target)}. Perhatikan letaknya, lalu pilih posisi itu untuk melanjutkan.
-                </span>
-              )}
-            </Feedback>
-          )}
+          {flow.done &&
+            (correct ? (
+              <Feedback
+                tone="ok"
+                title={`Tepat. Bilangan ${fmt(item.target)} terletak ${Math.abs(item.target)} langkah di ${where} titik 0.`}
+              />
+            ) : (
+              <Feedback tone="bad" title={`Belum tepat. Kamu memilih ${fmt(flow.answer ?? 0)}, jawaban yang benar ${fmt(item.target)}.`}>
+                {diagnose(item.target, flow.answer ?? 0)} Bilangan {fmt(item.target)} terletak {Math.abs(item.target)} langkah
+                di {where} titik 0.
+              </Feedback>
+            ))}
 
-          {flow.solved && <NextButton onClick={flow.next} last={flow.idx === ITEMS.length - 1} />}
+          {flow.done && <NextButton onClick={flow.next} last={flow.idx === ITEMS.length - 1} />}
         </div>
       )}
     </div>

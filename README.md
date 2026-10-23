@@ -39,7 +39,7 @@ Operasi hitung (penjumlahan dan pengurangan) **tidak** termasuk tujuan pertemuan
 | Dimensi | Elemen di RPM | Fitur media yang mendukung |
 |---|---|---|
 | Penalaran Kritis | Menganalisis nilai bilangan, menentukan hubungan perbandingan, memberi alasan logis | Tahap 2 meminta murid memilih **alasan** setelah memilih simbol. Pengecoh alasan berisi miskonsepsi umum. Soal latihan nomor 8 meminta murid menilai jawaban teman yang keliru. |
-| Kemandirian | Mengikuti tahapan secara mandiri, mengatur waktu, menyelesaikan aktivitas sesuai petunjuk | Alur pengerjaan lima tahap beserta alokasi waktunya di halaman Mulai, navigasi tahap, umpan balik otomatis, kesempatan mencoba lagi, dan kemajuan yang tersimpan di perangkat. |
+| Kemandirian | Mengikuti tahapan secara mandiri, mengatur waktu, menyelesaikan aktivitas sesuai petunjuk | Alur pengerjaan lima tahap beserta alokasi waktunya di halaman Mulai, navigasi tahap, umpan balik otomatis, jawaban yang dikunci sehingga murid harus teliti, dan kemajuan yang tersimpan di perangkat. |
 | Komunikasi | Mengomunikasikan hasil perbandingan dan alasannya melalui diskusi atau LKPD | Setiap jawaban benar di Tahap 2 menampilkan cara membaca kalimat matematikanya. Ringkasan hasil dan jawaban refleksi disalin ke Google Classroom. |
 | Kreativitas | Mengeksplorasi berbagai representasi untuk menyatakan perbandingan | Representasi papan duga (tegak), garis bilangan (mendatar), simbol, dan rantai urutan. Refleksi nomor 2 meminta contoh lain dari kehidupan sehari-hari. **Dukungan untuk dimensi ini masih lemah**; tugas mencipta representasi sendiri sebaiknya ada di LKPD. |
 
@@ -114,19 +114,21 @@ Soal 3 sampai 7 memakai bilangan abstrak (bukan ketinggian air), sehingga rentan
 
 ## 3. Penilaian dan pelaporan
 
-- **Tahap 1 sampai 3**: yang dicatat hanya **percobaan pertama** setiap soal. Murid tetap boleh mencoba lagi sampai benar. Pada Tahap 2, satu soal dihitung benar jika simbol dan alasannya sama-sama benar pada percobaan pertama.
-- **Bantuan bertahap**: setelah dua kali salah, media menampilkan jawaban atau petunjuk letak supaya murid tidak macet.
-- **Latihan penguatan**: skor dihitung per TP (masing-masing 3 soal). Jika benar kurang dari `MIN_BENAR_PER_TP` (saat ini 2), media menyarankan murid mengulang tahap TP tersebut.
+- **Satu kali menjawab**: setiap soal di Tahap 1 sampai 3 hanya dapat dijawab satu kali. Murid boleh mengganti pilihan sebelum menekan tombol kunci ("Kunci jawaban", "Kunci simbol", "Kunci alasan", "Kunci urutan"); setelah itu jawaban tidak dapat diubah. Tahap yang sudah selesai tidak dapat diulang.
+- **Tahap 2 dua langkah**: simbol dikunci lebih dulu. Simbol salah langsung mengakhiri soal (dihitung salah); simbol benar dilanjutkan ke pemilihan alasan. Soal dihitung benar jika simbol dan alasannya sama-sama benar.
+- **Pembahasan langsung**: setiap jawaban salah langsung disertai jawaban yang benar dan penjelasan miskonsepsinya.
+- **Latihan penguatan**: jawaban dapat diganti sampai tombol "Kumpulkan jawaban" ditekan dan dikonfirmasi. Skor dihitung per TP (masing-masing 3 soal). Jika benar kurang dari `MIN_BENAR_PER_TP` (saat ini 2), kotak TP ditandai "Perlu dipelajari lagi".
 - **Kriteria ketercapaian belum ada di RPM.** Bagian G (Asesmen) di RPM masih kosong. Angka 2 dari 3 adalah keputusan desain sementara, bukan ketentuan RPM. Ubah di `src/components/PracticeStage.tsx`.
 - **Ringkasan untuk Google Classroom** berisi nama, kelas, waktu, skor tahap per TP, skor latihan per TP, dan jawaban refleksi. Tombol "Salin hasil" memakai clipboard. Jika peramban memblokirnya, teks ringkasan tetap tampil dan bisa disalin manual.
 
 ### 3.1 Penyimpanan data
 
-Tidak ada server atau basis data. Media hanya menyimpan nama, kelas, tahap terakhir, dan skor tahap di `localStorage` peramban (kunci `bilangan-bulat-musi-v2`). Akibatnya:
+Tidak ada server atau basis data. Semua kemajuan disimpan di `localStorage` peramban dengan awalan kunci `bilangan-bulat-musi-v3:`: nama, kelas, tahap terakhir, skor tahap, jawaban yang sudah dikunci di setiap tahap, jawaban dan waktu pengumpulan latihan, serta refleksi. Memuat ulang halaman tidak menghapus jawaban dan tidak membuka kesempatan menjawab ulang. Setelah nama dan kelas diisi, peramban juga menampilkan peringatan bawaan saat murid hendak menutup tab, memuat ulang, atau meninggalkan halaman. Akibatnya:
 
 - data hanya ada di perangkat dan peramban yang dipakai murid;
 - guru **tidak** menerima data otomatis, sehingga bukti belajar bergantung pada ringkasan yang ditempel murid di Google Classroom;
-- jawaban latihan dan refleksi tidak disimpan; jika halaman dimuat ulang sebelum disalin, isinya hilang.
+- kemajuan hanya dapat dilanjutkan di perangkat dan peramban yang sama, dan tidak tersimpan dalam mode penyamaran;
+- satu perangkat yang dipakai bergantian oleh dua murid akan menampilkan jawaban murid pertama.
 
 ---
 
@@ -186,7 +188,8 @@ Teknologi: React 19, TypeScript, Vite, Tailwind CSS 4, ikon `lucide-react`, efek
     ├── types/index.ts         Tipe data: tahap, skor, bentuk soal
     ├── utils/
     │   ├── audio.ts           Efek suara (Web Audio API)
-    │   └── number.ts          Format bilangan bertanda, relasi <, >, =, pengurutan
+    │   ├── number.ts          Format bilangan bertanda, relasi <, >, =, pengurutan
+    │   └── storage.ts         Penyimpanan kemajuan di peramban (usePersistentState)
     └── components/
         ├── Navbar.tsx             Judul, tombol suara, tombol Panduan & Info
         ├── GuideModal.tsx         TP, alur media, catatan data, daftar sumber
@@ -196,7 +199,7 @@ Teknologi: React 19, TypeScript, Vite, Tailwind CSS 4, ikon `lucide-react`, efek
         ├── OrderStage.tsx         Tahap 3 (TP 3): kartu bilangan, diagnosis urutan
         ├── PracticeStage.tsx      Tahap 4: latihan, skor per TP, refleksi, ringkasan
         ├── StageShell.tsx         Komponen bersama: kepala tahap, progres, umpan balik,
-        │                          ringkasan tahap, logika percobaan pertama (useItemFlow)
+        │                          ringkasan tahap, tombol kunci, logika jawaban terkunci (useLockedFlow)
         ├── NumberLine.tsx         Garis bilangan mendatar SVG yang bisa diklik,
         │                          dapat digeser di layar HP
         ├── PeilSchaalGauge.tsx    Papan duga tegak -5 sampai +5 yang bisa diklik
@@ -211,7 +214,7 @@ Teknologi: React 19, TypeScript, Vite, Tailwind CSS 4, ikon `lucide-react`, efek
 | Soal Tahap 2 | `src/components/CompareStage.tsx` | konstanta `ITEMS` |
 | Soal Tahap 3 | `src/components/OrderStage.tsx` | konstanta `ITEMS` |
 | Soal latihan dan pertanyaan refleksi | `src/components/PracticeStage.tsx` | `QUESTIONS`, `REFLECTIONS` |
-| Batas saran mengulang tahap | `src/components/PracticeStage.tsx` | `MIN_BENAR_PER_TP` |
+| Batas penanda "Perlu dipelajari lagi" | `src/components/PracticeStage.tsx` | `MIN_BENAR_PER_TP` |
 | Rumusan TP di halaman Mulai | `src/components/OrientationStage.tsx` | konstanta `TUJUAN` |
 | Alur pengerjaan dan alokasi waktu di halaman Mulai | `src/components/OrientationStage.tsx` | konstanta `ALUR` |
 | Sumber fakta | `src/components/GuideModal.tsx` | konstanta `SOURCES` |
@@ -221,10 +224,11 @@ Teknologi: React 19, TypeScript, Vite, Tailwind CSS 4, ikon `lucide-react`, efek
 ## 7. Batasan yang diketahui
 
 1. Tidak ada pengiriman data ke guru; bukti belajar bergantung pada ringkasan yang ditempel murid.
-2. Jawaban latihan dan refleksi hilang jika halaman dimuat ulang sebelum disalin.
-3. Soal bersifat tetap (tidak diacak), sehingga murid bisa saling menyalin jawaban.
-4. `package.json` masih memuat dependensi bawaan templat yang tidak dipakai kode (`@google/genai`, `express`, `dotenv`). Begitu pula `metadata.json` yang masih menyebut kemampuan Gemini. Keduanya tidak memengaruhi fungsi media.
-5. Di layar HP, garis bilangan -10 sampai 10 lebih lebar dari layar dan perlu digeser; posisi awalnya dipusatkan di 0.
+2. Penguncian jawaban hanya berlaku di peramban. Murid yang menghapus data situs, membuka mode penyamaran, atau berpindah perangkat dapat mengerjakan dari awal. Ini tidak bisa dicegah tanpa server; guru perlu mewaspadai ringkasan ganda atas nama yang sama.
+3. Peringatan saat keluar adalah dialog bawaan peramban; isi pesannya tidak dapat diatur. Peramban HP tidak selalu menampilkannya, misalnya ketika tab ditutup paksa oleh sistem karena memori penuh. Dalam kasus itu, penyimpanan otomatis yang menjaga jawaban.
+4. Soal bersifat tetap (tidak diacak), sehingga murid bisa saling menyalin jawaban.
+5. `package.json` masih memuat dependensi bawaan templat yang tidak dipakai kode (`@google/genai`, `express`, `dotenv`). Begitu pula `metadata.json` yang masih menyebut kemampuan Gemini. Keduanya tidak memengaruhi fungsi media.
+6. Di layar HP, garis bilangan -10 sampai 10 lebih lebar dari layar dan perlu digeser; posisi awalnya dipusatkan di 0.
 
 ---
 

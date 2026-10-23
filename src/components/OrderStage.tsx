@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { Eye, EyeOff, RotateCcw } from 'lucide-react';
 import { NumberLine } from './NumberLine';
-import { Feedback, ItemProgress, NextButton, StageHeader, StageSummary, useItemFlow } from './StageShell';
+import { Feedback, ItemProgress, LockButton, LockNotice, NextButton, StageHeader, StageSummary, useLockedFlow } from './StageShell';
 import type { OrderItem, StageScore } from '../types';
 import { fmt, sortValues } from '../utils/number';
 import { sound } from '../utils/audio';
@@ -66,20 +66,23 @@ interface OrderStageProps {
 }
 
 export const OrderStage: React.FC<OrderStageProps> = ({ onComplete, onContinue }) => {
-  const flow = useItemFlow(ITEMS.length);
+  const flow = useLockedFlow<number[]>('tp3', ITEMS.length);
   const item = ITEMS[flow.idx];
   const expected = sortValues(item.values, item.direction);
 
   // Menyimpan indeks kartu, bukan nilainya, agar setiap kartu hanya bisa dipakai sekali.
-  const [chosen, setChosen] = useState<number[]>([]);
-  const [checked, setChecked] = useState<number[] | null>(null);
+  const [draft, setDraft] = useState<number[]>([]);
   const [showLine, setShowLine] = useState(false);
 
   useEffect(() => {
-    setChosen([]);
-    setChecked(null);
+    setDraft([]);
     setShowLine(false);
-  }, [flow.idx, flow.finished]);
+  }, [flow.idx]);
+
+  // Setelah dikunci, urutan yang ditampilkan adalah urutan tersimpan.
+  const chosen = flow.done ? (flow.answer ?? []) : draft;
+  const checked = flow.done ? chosen.map((i) => item.values[i]) : null;
+  const correct = flow.result === true;
 
   useEffect(() => {
     if (flow.finished) onComplete(flow.score);
@@ -90,23 +93,20 @@ export const OrderStage: React.FC<OrderStageProps> = ({ onComplete, onContinue }
   const full = chosen.length === item.values.length;
 
   const take = (i: number) => {
-    if (flow.solved) return;
+    if (flow.done) return;
     sound.playClick();
-    setChecked(null);
-    setChosen((prev) => [...prev, i]);
+    setDraft((prev) => [...prev, i]);
   };
 
   const drop = (pos: number) => {
-    if (flow.solved) return;
+    if (flow.done) return;
     sound.playClick();
-    setChecked(null);
-    setChosen((prev) => prev.filter((_, p) => p !== pos));
+    setDraft((prev) => prev.filter((_, p) => p !== pos));
   };
 
-  const check = () => {
-    const correct = answer.every((v, i) => v === expected[i]);
-    setChecked(answer);
-    flow.record(correct);
+  const lock = () => {
+    if (!full) return;
+    flow.save(draft, answer.every((v, i) => v === expected[i]));
   };
 
   const labelOf = (i: number) => item.labels?.[i];
@@ -131,7 +131,6 @@ export const OrderStage: React.FC<OrderStageProps> = ({ onComplete, onContinue }
           message="Salin satu urutan dari tahap ini ke LKPD-mu dalam bentuk kalimat dengan simbol, misalnya -7 < -5 < -2 < 4 < 5."
           nextLabel="Lanjut ke Latihan Penguatan"
           onNext={onContinue}
-          onRetry={flow.restart}
         />
       ) : (
         <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
@@ -153,7 +152,7 @@ export const OrderStage: React.FC<OrderStageProps> = ({ onComplete, onContinue }
                 return (
                   <button
                     key={i}
-                    disabled={used || flow.solved}
+                    disabled={used || flow.done}
                     onClick={() => take(i)}
                     className={`min-w-[64px] px-3 py-2 rounded-xl border-2 font-mono font-extrabold text-lg transition-all ${
                       used
@@ -187,7 +186,7 @@ export const OrderStage: React.FC<OrderStageProps> = ({ onComplete, onContinue }
                       </span>
                     )}
                     <button
-                      disabled={!filled || flow.solved}
+                      disabled={!filled || flow.done}
                       onClick={() => drop(pos)}
                       aria-label={filled ? `Keluarkan ${fmt(item.values[cardIdx])} dari urutan` : `Posisi ${pos + 1} kosong`}
                       className={`min-w-[56px] h-11 px-2 rounded-lg border-2 font-mono font-extrabold text-base ${
@@ -219,12 +218,11 @@ export const OrderStage: React.FC<OrderStageProps> = ({ onComplete, onContinue }
               {showLine ? <EyeOff className="w-4 h-4" /> : <Eye className="w-4 h-4" />}
               <span>{showLine ? 'Sembunyikan garis bilangan' : 'Tampilkan di garis bilangan'}</span>
             </button>
-            {!flow.solved && chosen.length > 0 && (
+            {!flow.done && chosen.length > 0 && (
               <button
                 onClick={() => {
                   sound.playClick();
-                  setChosen([]);
-                  setChecked(null);
+                  setDraft([]);
                 }}
                 className="flex items-center gap-1.5 px-3 py-2 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 text-xs font-semibold text-slate-200"
               >
@@ -234,7 +232,7 @@ export const OrderStage: React.FC<OrderStageProps> = ({ onComplete, onContinue }
             )}
           </div>
 
-          {(showLine || flow.solved) && (
+          {(showLine || flow.done) && (
             <div className="bg-slate-950 border border-slate-800 rounded-xl p-2 sm:p-3">
               <NumberLine
                 min={-10}
@@ -246,32 +244,30 @@ export const OrderStage: React.FC<OrderStageProps> = ({ onComplete, onContinue }
             </div>
           )}
 
-          {!flow.solved && (
-            <button
-              disabled={!full}
-              onClick={check}
-              className="w-full py-2.5 rounded-xl bg-amber-400 hover:bg-amber-300 disabled:bg-slate-800 disabled:text-slate-500 text-slate-950 font-bold text-sm"
-            >
-              {full ? 'Periksa urutan' : `Masukkan semua kartu (${chosen.length}/${item.values.length})`}
-            </button>
-          )}
-
-          {checked !== null && !flow.solved && (
-            <Feedback tone="bad" title="Urutan belum tepat. Kartu bertanda merah berada di posisi yang salah.">
-              {diagnose(checked, item)}
-              {flow.attempts >= 2 && (
-                <span className="block mt-1 text-amber-200">Urutan yang benar: {chain(expected, item.direction)}</span>
-              )}
-            </Feedback>
-          )}
-
-          {flow.solved && (
+          {!flow.done && (
             <>
-              <Feedback tone="ok" title={chain(expected, item.direction)}>
-                {item.direction === 'naik'
-                  ? 'Urutan terkecil ke terbesar sama dengan membaca titik pada garis bilangan dari kiri ke kanan.'
-                  : 'Urutan terbesar ke terkecil sama dengan membaca titik pada garis bilangan dari kanan ke kiri.'}
-              </Feedback>
+              <LockNotice />
+              <LockButton
+                disabled={!full}
+                onClick={lock}
+                label={full ? 'Kunci urutan' : `Masukkan semua kartu (${chosen.length}/${item.values.length})`}
+              />
+            </>
+          )}
+
+          {flow.done && (
+            <>
+              {correct ? (
+                <Feedback tone="ok" title={`Tepat. ${chain(expected, item.direction)}`}>
+                  {item.direction === 'naik'
+                    ? 'Urutan terkecil ke terbesar sama dengan membaca titik pada garis bilangan dari kiri ke kanan.'
+                    : 'Urutan terbesar ke terkecil sama dengan membaca titik pada garis bilangan dari kanan ke kiri.'}
+                </Feedback>
+              ) : (
+                <Feedback tone="bad" title={`Belum tepat. Urutan yang benar: ${chain(expected, item.direction)}`}>
+                  Kartu bertanda merah berada di posisi yang salah. {checked && diagnose(checked, item)}
+                </Feedback>
+              )}
               <NextButton onClick={flow.next} last={flow.idx === ITEMS.length - 1} />
             </>
           )}

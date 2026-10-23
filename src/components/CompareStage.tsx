@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { NumberLine } from './NumberLine';
-import { Feedback, ItemProgress, NextButton, StageHeader, StageSummary, useItemFlow } from './StageShell';
+import { Feedback, ItemProgress, LockButton, LockNotice, NextButton, StageHeader, StageSummary, useLockedFlow } from './StageShell';
 import type { CompareItem, Relation, StageScore } from '../types';
 import { absoluteValueRelation, fmt, relationOf, relationWord } from '../utils/number';
 import { sound } from '../utils/audio';
@@ -84,53 +84,65 @@ const symbolHint = (a: number, b: number, chosen: Relation): string => {
   return 'Perhatikan titik mana yang lebih ke kanan. Bilangan di sebelah kanan selalu lebih besar daripada bilangan di sebelah kirinya.';
 };
 
+interface CompareAnswer {
+  symbol: Relation;
+  reason: number | null;
+}
+
 interface CompareStageProps {
   onComplete: (score: StageScore) => void;
   onContinue: () => void;
 }
 
 export const CompareStage: React.FC<CompareStageProps> = ({ onComplete, onContinue }) => {
-  const flow = useItemFlow(ITEMS.length);
+  const flow = useLockedFlow<CompareAnswer>('tp2', ITEMS.length);
   const item = ITEMS[flow.idx];
   const rel = relationOf(item.a, item.b);
   const reasons = useMemo(() => buildReasons(item.a, item.b, flow.idx), [item, flow.idx]);
 
-  const [symbol, setSymbol] = useState<Relation | null>(null);
-  const [symbolOk, setSymbolOk] = useState(false);
-  const [symbolTries, setSymbolTries] = useState(0);
+  const [symbolPick, setSymbolPick] = useState<Relation | null>(null);
   const [reasonPick, setReasonPick] = useState<number | null>(null);
 
   useEffect(() => {
-    setSymbol(null);
-    setSymbolOk(false);
-    setSymbolTries(0);
+    setSymbolPick(null);
     setReasonPick(null);
-  }, [flow.idx, flow.finished]);
+  }, [flow.idx]);
 
   useEffect(() => {
     if (flow.finished) onComplete(flow.score);
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [flow.finished]);
 
-  const chooseSymbol = (s: Relation) => {
-    if (symbolOk) return;
-    setSymbol(s);
-    setSymbolTries((t) => t + 1);
-    if (s === rel) {
-      setSymbolOk(true);
+  const lockedSymbol = flow.answer?.symbol ?? null;
+  const lockedReason = flow.answer?.reason ?? null;
+  const symbol = lockedSymbol ?? symbolPick;
+  const symbolOk = lockedSymbol === rel;
+  const reasonStep = lockedSymbol !== null && symbolOk;
+  const correctReason = reasons.findIndex((r) => r.correct);
+
+  // Simbol yang salah langsung mengakhiri soal; simbol yang benar dilanjutkan ke langkah alasan.
+  const lockSymbol = () => {
+    if (symbolPick === null) return;
+    if (symbolPick === rel) {
       sound.playClick();
+      flow.save({ symbol: symbolPick, reason: null }, null);
     } else {
-      // Simbol salah membuat soal ini tidak lagi benar pada percobaan pertama.
-      flow.markFirstTryWrong();
-      sound.playError();
+      flow.save({ symbol: symbolPick, reason: null }, false);
     }
   };
 
-  const chooseReason = (i: number) => {
-    if (flow.solved) return;
-    setReasonPick(i);
-    flow.record(reasons[i].correct);
+  const lockReason = () => {
+    if (reasonPick === null || lockedSymbol === null) return;
+    flow.save({ symbol: lockedSymbol, reason: reasonPick }, reasons[reasonPick].correct);
   };
+
+  const reading = (
+    <>
+      Dibaca: "{fmt(item.a)} {relationWord(rel)} {fmt(item.b)}". Artinya ketinggian air {item.labelA}{' '}
+      {rel === '<' ? 'lebih rendah daripada' : rel === '>' ? 'lebih tinggi daripada' : 'sama dengan'} ketinggian air{' '}
+      {item.labelB}.
+    </>
+  );
 
   return (
     <div className="space-y-5">
@@ -156,10 +168,9 @@ export const CompareStage: React.FC<CompareStageProps> = ({ onComplete, onContin
       {flow.finished ? (
         <StageSummary
           score={flow.score}
-          message="Soal dihitung benar jika simbol dan alasannya tepat pada percobaan pertama. Tulis tiga kalimat perbandingan dari tahap ini beserta cara membacanya di LKPD-mu."
+          message="Soal dihitung benar jika simbol dan alasannya sama-sama tepat. Tulis tiga kalimat perbandingan dari tahap ini beserta cara membacanya di LKPD-mu."
           nextLabel="Lanjut ke Tahap 3: Mengurutkan"
           onNext={onContinue}
-          onRetry={flow.restart}
         />
       ) : (
         <div className="bg-slate-900/90 border border-slate-800 rounded-2xl p-4 sm:p-5 shadow-xl space-y-4">
@@ -188,11 +199,13 @@ export const CompareStage: React.FC<CompareStageProps> = ({ onComplete, onContin
             </span>
             <span
               className={`w-14 h-12 flex items-center justify-center font-mono font-extrabold text-2xl rounded-xl border-2 ${
-                symbolOk
+                lockedSymbol === null
+                  ? symbol
+                    ? 'bg-cyan-950 border-cyan-500 text-cyan-100'
+                    : 'border-dashed border-slate-600 text-slate-500'
+                  : symbolOk
                   ? 'bg-emerald-950 border-emerald-500 text-emerald-200'
-                  : symbol
-                  ? 'bg-rose-950 border-rose-500 text-rose-200'
-                  : 'border-dashed border-slate-600 text-slate-500'
+                  : 'bg-rose-950 border-rose-500 text-rose-200'
               }`}
               aria-live="polite"
             >
@@ -204,76 +217,107 @@ export const CompareStage: React.FC<CompareStageProps> = ({ onComplete, onContin
           </div>
 
           <div className="grid grid-cols-3 gap-2">
-            {(['<', '=', '>'] as Relation[]).map((s) => (
-              <button
-                key={s}
-                disabled={symbolOk}
-                onClick={() => chooseSymbol(s)}
-                className={`py-2.5 rounded-xl border-2 font-mono font-bold transition-all ${
-                  symbol === s
-                    ? s === rel
-                      ? 'bg-emerald-800 border-emerald-400 text-white'
-                      : 'bg-rose-800 border-rose-400 text-white'
-                    : 'bg-slate-800 border-slate-700 text-slate-100 hover:border-slate-500 disabled:opacity-50'
-                }`}
-              >
-                <span className="block text-2xl leading-none">{s}</span>
-                <span className="block text-[11px] font-sans mt-1 text-slate-300">{relationWord(s)}</span>
-              </button>
-            ))}
+            {(['<', '=', '>'] as Relation[]).map((s) => {
+              const style =
+                lockedSymbol === null
+                  ? symbolPick === s
+                    ? 'bg-cyan-800 border-cyan-400 text-white'
+                    : 'bg-slate-800 border-slate-700 text-slate-100 hover:border-slate-500'
+                  : s === rel
+                  ? 'bg-emerald-800 border-emerald-400 text-white'
+                  : lockedSymbol === s
+                  ? 'bg-rose-800 border-rose-400 text-white'
+                  : 'bg-slate-900 border-slate-800 text-slate-500';
+              return (
+                <button
+                  key={s}
+                  disabled={lockedSymbol !== null}
+                  aria-pressed={symbol === s}
+                  onClick={() => {
+                    sound.playClick();
+                    setSymbolPick(s);
+                  }}
+                  className={`py-2.5 rounded-xl border-2 font-mono font-bold transition-all ${style}`}
+                >
+                  <span className="block text-2xl leading-none">{s}</span>
+                  <span className="block text-[11px] font-sans mt-1 text-slate-300">{relationWord(s)}</span>
+                </button>
+              );
+            })}
           </div>
 
-          {symbol && !symbolOk && (
-            <Feedback tone="bad" title="Simbol belum tepat.">
-              {symbolHint(item.a, item.b, symbol)}
-              {symbolTries >= 2 && (
-                <span className="block mt-1 text-amber-200">
-                  Petunjuk: titik {item.labelA} ({fmt(item.a)}) berada di sebelah{' '}
-                  {rel === '=' ? 'yang sama dengan' : rel === '<' ? 'kiri' : 'kanan'} titik {item.labelB} ({fmt(item.b)}).
-                </span>
-              )}
+          {lockedSymbol === null && (
+            <>
+              <LockNotice />
+              <LockButton
+                disabled={symbolPick === null}
+                onClick={lockSymbol}
+                label={symbolPick === null ? 'Pilih simbol terlebih dahulu' : `Kunci simbol: ${symbolPick}`}
+              />
+            </>
+          )}
+
+          {lockedSymbol !== null && !symbolOk && (
+            <Feedback tone="bad" title={`Belum tepat. Jawaban yang benar: ${fmt(item.a)} ${rel} ${fmt(item.b)}`}>
+              {symbolHint(item.a, item.b, lockedSymbol)} Titik {item.labelA} ({fmt(item.a)}) berada di sebelah{' '}
+              {rel === '=' ? 'yang sama dengan' : rel === '<' ? 'kiri' : 'kanan'} titik {item.labelB} ({fmt(item.b)}).{' '}
+              {reading}
             </Feedback>
           )}
 
-          {symbolOk && (
+          {reasonStep && (
             <div className="space-y-2">
               <p className="text-sm font-semibold text-slate-100">
                 Simbol tepat. Sekarang pilih alasan yang paling benar untuk {fmt(item.a)} {rel} {fmt(item.b)}:
               </p>
-              {reasons.map((r, i) => (
-                <button
-                  key={r.text}
-                  disabled={flow.solved}
-                  onClick={() => chooseReason(i)}
-                  className={`w-full text-left p-3 rounded-xl border-2 text-sm transition-all ${
-                    reasonPick === i
-                      ? r.correct
-                        ? 'bg-emerald-950 border-emerald-500 text-emerald-100'
-                        : 'bg-rose-950 border-rose-500 text-rose-100'
-                      : 'bg-slate-950 border-slate-800 text-slate-200 hover:border-slate-600 disabled:opacity-50'
-                  }`}
-                >
-                  {r.text}
-                </button>
-              ))}
-              {reasonPick !== null && !reasons[reasonPick].correct && !flow.solved && (
-                <Feedback tone="bad" title="Alasan ini tidak berlaku untuk semua bilangan bulat.">
-                  {reasons[reasonPick].why} Pilih alasan yang memakai letak pada garis bilangan.
-                </Feedback>
+              {reasons.map((r, i) => {
+                const style =
+                  lockedReason === null
+                    ? reasonPick === i
+                      ? 'bg-cyan-950 border-cyan-500 text-cyan-50'
+                      : 'bg-slate-950 border-slate-800 text-slate-200 hover:border-slate-600'
+                    : i === correctReason
+                    ? 'bg-emerald-950 border-emerald-500 text-emerald-100'
+                    : lockedReason === i
+                    ? 'bg-rose-950 border-rose-500 text-rose-100'
+                    : 'bg-slate-950 border-slate-900 text-slate-500';
+                return (
+                  <button
+                    key={r.text}
+                    disabled={lockedReason !== null}
+                    aria-pressed={(lockedReason ?? reasonPick) === i}
+                    onClick={() => {
+                      sound.playClick();
+                      setReasonPick(i);
+                    }}
+                    className={`w-full text-left p-3 rounded-xl border-2 text-sm transition-all ${style}`}
+                  >
+                    {r.text}
+                  </button>
+                );
+              })}
+              {lockedReason === null && (
+                <LockButton
+                  disabled={reasonPick === null}
+                  onClick={lockReason}
+                  label={reasonPick === null ? 'Pilih alasan terlebih dahulu' : 'Kunci alasan'}
+                />
               )}
             </div>
           )}
 
-          {flow.solved && (
-            <>
-              <Feedback tone="ok" title={`${fmt(item.a)} ${rel} ${fmt(item.b)}`}>
-                Dibaca: "{fmt(item.a)} {relationWord(rel)} {fmt(item.b)}". Artinya ketinggian air {item.labelA}{' '}
-                {rel === '<' ? 'lebih rendah daripada' : rel === '>' ? 'lebih tinggi daripada' : 'sama dengan'} ketinggian air{' '}
-                {item.labelB}.
+          {lockedReason !== null &&
+            (reasons[lockedReason].correct ? (
+              <Feedback tone="ok" title={`Tepat. ${fmt(item.a)} ${rel} ${fmt(item.b)}`}>
+                {reading}
               </Feedback>
-              <NextButton onClick={flow.next} last={flow.idx === ITEMS.length - 1} />
-            </>
-          )}
+            ) : (
+              <Feedback tone="bad" title="Simbolnya tepat, tetapi alasannya tidak berlaku untuk semua bilangan bulat.">
+                {reasons[lockedReason].why} Alasan yang benar ditandai hijau: {reasons[correctReason].text} {reading}
+              </Feedback>
+            ))}
+
+          {flow.done && <NextButton onClick={flow.next} last={flow.idx === ITEMS.length - 1} />}
         </div>
       )}
     </div>
