@@ -5,12 +5,18 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // GANTI daftar email di bawah dengan email akun Google guru (huruf kecil semua).
+    // Email akun Google guru yang boleh membaca data semua siswa (huruf kecil semua).
     // Daftar yang sama juga ditulis di src/firebase-config.ts (TEACHER_EMAILS).
     function isTeacher() {
       return request.auth != null
         && request.auth.token.email_verified == true
-        && request.auth.token.email.lower() in ['guru@contoh.sch.id'];
+        && request.auth.token.email.lower() in [
+             'mazizalhakimr@gmail.com',
+             'oktadwilestarii03@gmail.com',
+             'ahmadassiddiq176@gmail.com',
+             'dehya1801@gmail.com',
+             'thevandointengsukendro@gmail.com'
+           ];
     }
 
     function isOwner(uid) {
