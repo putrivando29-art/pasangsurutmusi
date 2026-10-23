@@ -63,6 +63,9 @@ function OnlineApp() {
 
   const enterStudent = (user: User, profile: StudentDoc) => {
     configureStorage(user.uid, makeRemoteWriter(user.uid, (e) => console.error('Gagal menyimpan ke server', e)));
+    // Data server menjadi sumber utama: salinan lama di peramban (misalnya dari data
+    // yang sudah dihapus guru) dibuang dulu agar tidak terkirim ulang.
+    clearScopedStorage(user.uid);
     seedStorage(profile.state ?? {});
     setPhase({ kind: 'siswa', user, profile });
   };

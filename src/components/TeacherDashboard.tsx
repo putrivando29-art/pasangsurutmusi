@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo, useState } from 'react';
 import { onSnapshot } from 'firebase/firestore';
-import { ChevronDown, ChevronUp, Download, LogOut, RefreshCw, Search, Users } from 'lucide-react';
-import { studentsRef, type StudentDoc } from '../services/progress';
+import { ChevronDown, ChevronUp, Download, LogOut, RefreshCw, Search, Trash2, Users } from 'lucide-react';
+import { deleteStudent, studentsRef, type StudentDoc } from '../services/progress';
 import { buildReport, downloadExcel, STAGE_LABEL, type StudentReport } from '../services/report';
 import { MIN_BENAR_PER_TP, QUESTIONS, REFLECTIONS, TP_LABEL } from './PracticeStage';
 import type { TpKey } from '../types';
@@ -23,7 +23,7 @@ const Mark: React.FC<{ value: boolean | null }> = ({ value }) => (
   </span>
 );
 
-const Detail: React.FC<{ r: StudentReport }> = ({ r }) => (
+const Detail: React.FC<{ r: StudentReport; onDelete: () => void; deleting: boolean }> = ({ r, onDelete, deleting }) => (
   <div className="p-4 space-y-4 bg-slate-950 text-sm">
     <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
       {TP_KEYS.map((tp) => (
@@ -68,6 +68,19 @@ const Detail: React.FC<{ r: StudentReport }> = ({ r }) => (
         </div>
       ))}
     </div>
+    <div className="pt-3 border-t border-slate-800 flex flex-col sm:flex-row sm:items-center justify-between gap-2">
+      <span className="text-xs text-slate-500">
+        Akun: {r.akun}. Menghapus data tidak dapat dibatalkan; akun login siswa tetap ada di Firebase Authentication.
+      </span>
+      <button
+        onClick={onDelete}
+        disabled={deleting}
+        className="flex items-center justify-center gap-1.5 px-3 py-2 rounded-xl border border-rose-600/70 text-rose-300 hover:bg-rose-950 disabled:opacity-50 text-xs font-bold"
+      >
+        <Trash2 className="w-3.5 h-3.5" />
+        {deleting ? 'Menghapus...' : 'Hapus data siswa ini'}
+      </button>
+    </div>
   </div>
 );
 
@@ -83,6 +96,26 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ email, onLog
   const [query, setQuery] = useState('');
   const [open, setOpen] = useState<string | null>(null);
   const [exporting, setExporting] = useState(false);
+  const [deleting, setDeleting] = useState<string | null>(null);
+
+  const removeStudent = async (r: StudentReport) => {
+    const sure = window.confirm(
+      `Hapus semua data ${r.nama} (${r.kelas}, akun ${r.akun})?\n\nJawaban, nilai, dan refleksinya akan hilang permanen dan tidak bisa dikembalikan.`,
+    );
+    if (!sure) return;
+    setDeleting(r.uid);
+    try {
+      await deleteStudent(r.uid);
+      setOpen(null);
+    } catch (e) {
+      console.error(e);
+      window.alert(
+        'Data gagal dihapus. Pastikan aturan Firestore terbaru (yang mengizinkan guru menghapus) sudah di-Publish dan internet tersambung.',
+      );
+    } finally {
+      setDeleting(null);
+    }
+  };
 
   // Data diperbarui langsung setiap kali ada siswa yang menjawab.
   useEffect(
@@ -272,7 +305,7 @@ export const TeacherDashboard: React.FC<TeacherDashboardProps> = ({ email, onLog
                       {isOpen && (
                         <tr className="border-t border-slate-800">
                           <td colSpan={10}>
-                            <Detail r={r} />
+                            <Detail r={r} deleting={deleting === r.uid} onDelete={() => removeStudent(r)} />
                           </td>
                         </tr>
                       )}

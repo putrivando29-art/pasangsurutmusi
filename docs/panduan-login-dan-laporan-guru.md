@@ -19,6 +19,7 @@ Mode login aktif otomatis setelah `src/firebase-config.ts` diisi.
 | Login guru | Akun Google yang emailnya didaftarkan. Guru langsung masuk ke halaman laporan, bukan halaman belajar |
 | Laporan guru | Daftar siswa dengan filter kelas dan pencarian nama, rata-rata latihan per TP, jumlah siswa di bawah 2/3, rincian benar/salah per soal, jawaban latihan, refleksi, dan tombol **Unduh Excel**. Data diperbarui langsung tanpa memuat ulang |
 | File Excel | Empat sheet: Rekap, Per Soal, Refleksi, Kunci Latihan |
+| Hapus data siswa | Di laporan guru: **Rincian > Hapus data siswa ini**, lalu konfirmasi. Jawaban, nilai, dan refleksi siswa itu terhapus permanen. Akun loginnya tetap ada; jika siswa itu masuk lagi, ia diminta mengisi nama dan kelas lalu mulai dari awal |
 
 ## Langkah pemasangan (sekali saja)
 
@@ -72,6 +73,8 @@ export const TEACHER_EMAILS: string[] = ['emailguru@gmail.com'];
 
 - **Lupa kata sandi**: siswa dengan nama pengguna tidak bisa memulihkan kata sandinya sendiri karena akunnya tidak memakai email asli. Guru dapat menghapus akun itu di **Authentication > Users**. Setelah itu siswa membuat akun baru, dan data akun lama tetap ada di laporan sebagai baris terpisah.
 - **Satu siswa, dua akun**: jika siswa membuat akun kedua, laporan menampilkan dua baris. Periksa kolom "Terakhir aktif".
+- **Menghapus akun uji coba**: tombol hapus di laporan hanya menghapus data jawaban. Untuk menghapus akun loginnya juga, buka **Authentication > Users**, klik titik tiga pada akun itu, lalu **Delete account**.
+- **Aturan Firestore harus versi terbaru** agar guru boleh menghapus data. Setiap kali `firestore.rules` diperbarui, tempel ulang isinya di **Firestore Database > Rules** lalu **Publish**.
 - **Penguncian jawaban di server**: tahap yang sudah selesai dan latihan yang sudah dikumpulkan tidak dapat diubah lagi, termasuk lewat cara teknis di luar website. Jawaban per soal di tengah tahap yang belum selesai hanya dikunci oleh website, sehingga siswa yang paham teknis masih mungkin mengubahnya lewat konsol peramban.
 - **Tanpa internet sama sekali**: login pertama dan membuka halaman tetap membutuhkan internet. Mode offline hanya menjaga jawaban yang diberikan setelah halaman terbuka.
 - **Keluar akun**: jika masih ada jawaban yang belum terkirim, website meminta konfirmasi sebelum keluar, karena jawaban itu bisa hilang.

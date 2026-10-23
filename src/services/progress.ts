@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import {
   collection,
+  deleteDoc,
   doc,
   FieldPath,
   getDoc,
@@ -47,6 +48,8 @@ export async function createStudent(uid: string, nama: string, kelas: string, ak
   // Tidak ditunggu sampai server membalas, agar pendaftaran tetap jalan saat sinyal lemah.
   setDoc(studentRef(uid), data).catch((e) => console.error('Gagal membuat profil siswa', e));
 }
+
+export const deleteStudent = (uid: string) => deleteDoc(studentRef(uid));
 
 export const makeRemoteWriter = (uid: string, onError: (e: unknown) => void) => (key: string, json: string) => {
   updateDoc(studentRef(uid), new FieldPath('state', key), json, 'diperbarui', serverTimestamp()).catch(onError);

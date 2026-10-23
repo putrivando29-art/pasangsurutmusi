@@ -63,7 +63,8 @@ service cloud.firestore {
         && stageUnchangedIfFinished('tp3')
         && practiceUnchangedIfSubmitted();
 
-      allow delete: if false;
+      // Hanya guru yang boleh menghapus data siswa (misalnya akun uji coba).
+      allow delete: if isTeacher();
     }
   }
 }
