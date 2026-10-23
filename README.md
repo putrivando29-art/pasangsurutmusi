@@ -166,6 +166,14 @@ npm run preview    # mencoba hasil build
 
 Hasil `dist/` berupa file statis, sehingga bisa diunggah ke layanan hosting statis apa pun. Tautannya kemudian dibagikan lewat Google Classroom.
 
+### 5.1 Terbit otomatis lewat GitHub Pages
+
+Workflow `.github/workflows/deploy-pages.yml` membangun dan menerbitkan media setiap kali ada perubahan di branch utama repo. Alamatnya:
+
+https://putrivando29-art.github.io/pasangsurutmusi/
+
+Syarat sekali atur: di GitHub buka **Settings > Pages**, lalu pada **Build and deployment > Source** pilih **GitHub Actions**. Setelah itu, setiap perubahan yang disimpan di branch utama akan tayang dalam beberapa menit. Prosesnya dapat dipantau di tab **Actions**.
+
 Teknologi: React 19, TypeScript, Vite, Tailwind CSS 4, ikon `lucide-react`, efek `canvas-confetti`. Efek suara dibuat langsung dengan Web Audio API (`src/utils/audio.ts`) dan bisa dimatikan dari tombol "Suara Aktif".
 
 ---
@@ -179,6 +187,8 @@ Teknologi: React 19, TypeScript, Vite, Tailwind CSS 4, ikon `lucide-react`, efek
 ├── package.json               Dependensi dan skrip npm
 ├── vite.config.ts             Konfigurasi Vite (React + Tailwind)
 ├── tsconfig.json              Konfigurasi TypeScript
+├── .github/workflows/
+│   └── deploy-pages.yml       Terbit otomatis ke GitHub Pages
 ├── docs/
 │   └── lampiran-1-rancangan-aktivitas-web-interaktif.md
 └── src/
