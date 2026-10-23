@@ -9,6 +9,7 @@ interface OrientationStageProps {
   name: string;
   kelas: string;
   ready: boolean;
+  identityLocked?: boolean;
   onIdentity: (name: string, kelas: string) => void;
   onContinue: () => void;
 }
@@ -67,7 +68,7 @@ const ALUR = [
   },
 ];
 
-export const OrientationStage: React.FC<OrientationStageProps> = ({ name, kelas, ready, onIdentity, onContinue }) => {
+export const OrientationStage: React.FC<OrientationStageProps> = ({ name, kelas, ready, identityLocked = false, onIdentity, onContinue }) => {
   const [level, setLevel] = useState(-2);
 
   const choose = (lvl: number) => {
@@ -108,15 +109,24 @@ export const OrientationStage: React.FC<OrientationStageProps> = ({ name, kelas,
           <ul className="list-disc list-inside text-sm text-slate-300 space-y-1.5">
             <li>Tahap dapat dipilih dari baris di atas. Tanda centang berarti tahap itu sudah selesai.</li>
             <li>Setiap soal hanya dapat dijawab satu kali. Setelah kamu menekan tombol kunci, jawaban tidak bisa diubah, jadi kerjakan dengan teliti.</li>
-            <li>Jangan menutup atau memuat ulang halaman selama mengerjakan. Jika halaman tertutup tanpa sengaja, buka lagi di peramban yang sama: jawabanmu tetap tersimpan.</li>
+            <li>
+              {identityLocked
+                ? 'Jangan menutup atau memuat ulang halaman selama mengerjakan. Jika halaman tertutup, masuk lagi dengan akun yang sama di perangkat mana pun: jawabanmu tetap tersimpan.'
+                : 'Jangan menutup atau memuat ulang halaman selama mengerjakan. Jika halaman tertutup tanpa sengaja, buka lagi di peramban yang sama: jawabanmu tetap tersimpan.'}
+            </li>
           </ul>
-          <p className="text-xs text-slate-400">Wajib diisi sebelum mulai. Nama dan kelas ikut tercantum di ringkasan hasil.</p>
+          <p className="text-xs text-slate-400">
+            {identityLocked
+              ? 'Nama dan kelas diambil dari akunmu. Semua jawaban tersimpan di akun ini dan terkirim ke guru.'
+              : 'Wajib diisi sebelum mulai. Nama dan kelas ikut tercantum di ringkasan hasil.'}
+          </p>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2">
             <label className="sm:col-span-2 block">
               <span className="text-xs font-semibold text-slate-400">Nama lengkap</span>
               <input
                 value={name}
                 onChange={(e) => onIdentity(e.target.value, kelas)}
+                readOnly={identityLocked}
                 className="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 focus:border-amber-400 outline-none px-3 py-2 text-sm text-slate-100"
                 autoComplete="name"
               />
@@ -126,6 +136,7 @@ export const OrientationStage: React.FC<OrientationStageProps> = ({ name, kelas,
               <input
                 value={kelas}
                 onChange={(e) => onIdentity(name, e.target.value)}
+                readOnly={identityLocked}
                 placeholder="VII-A"
                 className="mt-1 w-full rounded-lg bg-slate-950 border border-slate-700 focus:border-amber-400 outline-none px-3 py-2 text-sm text-slate-100 placeholder:text-slate-600"
               />

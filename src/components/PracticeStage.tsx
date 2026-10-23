@@ -5,7 +5,7 @@ import confetti from 'canvas-confetti';
 import type { PracticeQuestion, ScoreBoard, TpKey } from '../types';
 import { sound } from '../utils/audio';
 
-const QUESTIONS: PracticeQuestion[] = [
+export const QUESTIONS: PracticeQuestion[] = [
   {
     id: 'p1',
     tp: 'tp1',
@@ -93,15 +93,15 @@ const QUESTIONS: PracticeQuestion[] = [
 
 // Batas minimal yang dipakai media untuk menyarankan pengulangan tahap.
 // RPM belum menetapkan kriteria ketercapaian, jadi guru dapat mengubah angka ini.
-const MIN_BENAR_PER_TP = 2;
+export const MIN_BENAR_PER_TP = 2;
 
-const TP_LABEL: Record<TpKey, string> = {
+export const TP_LABEL: Record<TpKey, string> = {
   tp1: 'TP 1 · Menentukan letak',
   tp2: 'TP 2 · Membandingkan',
   tp3: 'TP 3 · Mengurutkan',
 };
 
-const REFLECTIONS = [
+export const REFLECTIONS = [
   'Jelaskan dengan kata-katamu cara menentukan bilangan yang lebih besar di antara dua bilangan negatif.',
   'Sebutkan satu contoh lain dalam kehidupan sehari-hari yang memakai bilangan bulat, lalu bandingkan dua nilainya.',
   'Bagian mana yang masih membingungkan bagimu?',

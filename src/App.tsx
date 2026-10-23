@@ -1,137 +1,194 @@
 import React, { useEffect, useState } from 'react';
-import { CheckCircle2 } from 'lucide-react';
-import { Navbar } from './components/Navbar';
-import { GuideModal } from './components/GuideModal';
-import { OrientationStage } from './components/OrientationStage';
-import { LocateStage } from './components/LocateStage';
-import { CompareStage } from './components/CompareStage';
-import { OrderStage } from './components/OrderStage';
-import { PracticeStage } from './components/PracticeStage';
-import type { ScoreBoard, StageId, StageScore, TpKey } from './types';
-import { sound } from './utils/audio';
-import { usePersistentState } from './utils/storage';
+import { onAuthStateChanged, signOut, type User } from 'firebase/auth';
+import { waitForPendingWrites } from 'firebase/firestore';
+import { Cloud, CloudOff, LogOut, RefreshCw } from 'lucide-react';
+import StudentApp from './StudentApp';
+import { LoginPage } from './components/LoginPage';
+import { ProfileForm } from './components/ProfileForm';
+import { TeacherDashboard } from './components/TeacherDashboard';
+import { emailToUsername, firebaseEnabled, getFirebase, isTeacherEmail } from './services/firebase';
+import { createStudent, loadStudent, makeRemoteWriter, useSyncStatus, type StudentDoc } from './services/progress';
+import { takePendingProfile } from './services/session';
+import { configureStorage, flushRemote, seedStorage } from './utils/storage';
 
-const STAGES: { id: StageId; short: string; title: string }[] = [
-  { id: 'orientasi', short: 'Mulai', title: 'Orientasi' },
-  { id: 'tp1', short: 'TP 1', title: 'Letak' },
-  { id: 'tp2', short: 'TP 2', title: 'Bandingkan' },
-  { id: 'tp3', short: 'TP 3', title: 'Urutkan' },
-  { id: 'latihan', short: 'Akhir', title: 'Latihan' },
-];
+type Phase =
+  | { kind: 'memuat' }
+  | { kind: 'keluar'; notice?: string }
+  | { kind: 'guru'; user: User }
+  | { kind: 'profil'; user: User }
+  | { kind: 'siswa'; user: User; profile: Pick<StudentDoc, 'nama' | 'kelas'> }
+  | { kind: 'gagal'; user: User; message: string };
 
-const EMPTY_SCORES: ScoreBoard = { tp1: null, tp2: null, tp3: null };
+const Loading: React.FC<{ text: string }> = ({ text }) => (
+  <div className="min-h-screen bg-slate-950 text-slate-300 flex items-center justify-center gap-2 text-sm">
+    <RefreshCw className="w-4 h-4 animate-spin" />
+    {text}
+  </div>
+);
+
+const SyncBadge: React.FC<{ uid: string }> = ({ uid }) => {
+  const status = useSyncStatus(uid);
+  const style =
+    status === 'tersimpan'
+      ? 'text-emerald-300 border-emerald-700/60'
+      : status === 'menunggu'
+      ? 'text-amber-300 border-amber-600/60'
+      : 'text-rose-300 border-rose-600/60';
+  const text =
+    status === 'tersimpan' ? 'Tersimpan' : status === 'menunggu' ? 'Mengirim...' : 'Offline, disimpan di HP';
+  return (
+    <span
+      className={`flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border text-xs font-semibold ${style}`}
+      data-sync={status}
+      aria-live="polite"
+    >
+      {status === 'offline' ? <CloudOff className="w-3.5 h-3.5" /> : <Cloud className="w-3.5 h-3.5" />}
+      {text}
+    </span>
+  );
+};
+
+const clearScopedStorage = (uid: string) => {
+  try {
+    Object.keys(localStorage)
+      .filter((k) => k.includes(`:${uid}:`))
+      .forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // Tidak masalah; data utama ada di server.
+  }
+};
+
+function OnlineApp() {
+  const [phase, setPhase] = useState<Phase>({ kind: 'memuat' });
+
+  const enterStudent = (user: User, profile: StudentDoc) => {
+    configureStorage(user.uid, makeRemoteWriter(user.uid, (e) => console.error('Gagal menyimpan ke server', e)));
+    seedStorage(profile.state ?? {});
+    setPhase({ kind: 'siswa', user, profile });
+  };
+
+  useEffect(() => {
+    const { auth } = getFirebase();
+    return onAuthStateChanged(auth, async (user) => {
+      configureStorage('', null);
+      if (!user) {
+        setPhase((prev) => (prev.kind === 'keluar' ? prev : { kind: 'keluar' }));
+        return;
+      }
+      let intended: string | null = null;
+      try {
+        intended = sessionStorage.getItem('peran-login');
+        sessionStorage.removeItem('peran-login');
+      } catch {
+        // sessionStorage tidak tersedia.
+      }
+      if (isTeacherEmail(user.email)) {
+        setPhase({ kind: 'guru', user });
+        return;
+      }
+      if (intended === 'guru') {
+        await signOut(auth);
+        setPhase({ kind: 'keluar', notice: `Email ${user.email} tidak terdaftar sebagai guru.` });
+        return;
+      }
+      setPhase({ kind: 'memuat' });
+      try {
+        const pending = takePendingProfile();
+        if (pending) {
+          await createStudent(user.uid, pending.nama, pending.kelas, pending.akun);
+          enterStudent(user, { ...pending, state: {} });
+          return;
+        }
+        const profile = await loadStudent(user.uid);
+        if (profile) enterStudent(user, profile);
+        else setPhase({ kind: 'profil', user });
+      } catch (e) {
+        console.error(e);
+        setPhase({
+          kind: 'gagal',
+          user,
+          message: 'Data akun belum bisa diambil. Pastikan internet tersambung, lalu muat ulang halaman.',
+        });
+      }
+    });
+  }, []);
+
+  const logout = async (uid?: string) => {
+    if (uid) {
+      flushRemote();
+      // Tunggu sebentar sampai semua jawaban sampai di server sebelum keluar.
+      const sent = await Promise.race([
+        waitForPendingWrites(getFirebase().db).then(() => true),
+        new Promise<boolean>((resolve) => setTimeout(() => resolve(false), 4000)),
+      ]);
+      if (
+        !sent &&
+        !window.confirm(
+          'Masih ada jawaban yang belum terkirim ke server karena koneksi internet. Jika keluar sekarang, jawaban itu baru terkirim setelah kamu masuk lagi di perangkat ini. Tetap keluar?',
+        )
+      )
+        return;
+    }
+    await signOut(getFirebase().auth);
+    if (uid) clearScopedStorage(uid);
+  };
+
+  if (phase.kind === 'memuat') return <Loading text="Memuat akun..." />;
+  if (phase.kind === 'keluar') return <LoginPage notice={phase.notice} />;
+  if (phase.kind === 'guru') return <TeacherDashboard email={phase.user.email ?? ''} onLogout={() => logout()} />;
+  if (phase.kind === 'gagal')
+    return (
+      <div className="min-h-screen bg-slate-950 text-slate-200 flex flex-col items-center justify-center gap-3 px-4 text-center">
+        <p className="text-sm max-w-sm">{phase.message}</p>
+        <button onClick={() => window.location.reload()} className="px-4 py-2 rounded-xl bg-slate-800 text-sm font-semibold">
+          Muat ulang
+        </button>
+        <button onClick={() => logout()} className="text-xs text-slate-400 underline">
+          Keluar
+        </button>
+      </div>
+    );
+  if (phase.kind === 'profil')
+    return (
+      <ProfileForm
+        defaultName={phase.user.displayName ?? ''}
+        email={phase.user.email ?? ''}
+        onLogout={() => logout()}
+        onSubmit={(nama, kelas) => {
+          const akun = phase.user.email ?? phase.user.uid;
+          createStudent(phase.user.uid, nama, kelas, akun);
+          enterStudent(phase.user, { nama: nama.trim(), kelas: kelas.trim(), akun, state: {} });
+        }}
+      />
+    );
+
+  const { user, profile } = phase;
+  const akun = emailToUsername(user.email) ?? user.email ?? '';
+  return (
+    <StudentApp
+      key={user.uid}
+      account={{
+        nama: profile.nama,
+        kelas: profile.kelas,
+        navExtra: (
+          <>
+            <SyncBadge uid={user.uid} />
+            <button
+              onClick={() => logout(user.uid)}
+              title={`Masuk sebagai ${akun}`}
+              className="flex items-center gap-1.5 px-3 py-1.5 rounded-xl bg-slate-900 border border-slate-700 text-xs font-semibold text-slate-200 hover:bg-slate-800"
+            >
+              <LogOut className="w-3.5 h-3.5 text-rose-300" />
+              Keluar
+            </button>
+          </>
+        ),
+      }}
+    />
+  );
+}
 
 export default function App() {
-  const [soundEnabled, setSoundEnabled] = useState<boolean>(true);
-  const [isGuideOpen, setIsGuideOpen] = useState<boolean>(false);
-  const [stage, setStage] = usePersistentState<StageId>('tahap', 'orientasi');
-  const [name, setName] = usePersistentState('nama', '');
-  const [kelas, setKelas] = usePersistentState('kelas', '');
-  const [scores, setScores] = usePersistentState<ScoreBoard>('skor', EMPTY_SCORES);
-
-  // Nama dan kelas wajib diisi sebelum mengerjakan soal, karena keduanya menjadi
-  // identitas pada ringkasan hasil yang dikirim ke Google Classroom.
-  const ready = name.trim() !== '' && kelas.trim() !== '';
-
-  // Peramban menampilkan peringatan bawaannya saat murid menutup tab, memuat ulang,
-  // atau berpindah alamat. Kemajuan tetap tersimpan walaupun murid tetap keluar.
-  useEffect(() => {
-    if (!ready) return;
-    const warn = (e: BeforeUnloadEvent) => {
-      e.preventDefault();
-      e.returnValue = '';
-    };
-    window.addEventListener('beforeunload', warn);
-    return () => window.removeEventListener('beforeunload', warn);
-  }, [ready]);
-
-  const handleToggleSound = () => {
-    const newState = !soundEnabled;
-    setSoundEnabled(newState);
-    sound.enabled = newState;
-    if (newState) {
-      sound.playWaterSplash();
-    }
-  };
-
-  const goTo = (id: StageId) => {
-    setStage(id);
-    window.scrollTo({ top: 0, behavior: 'smooth' });
-  };
-
-  const saveScore = (tp: TpKey) => (score: StageScore) => setScores((prev) => ({ ...prev, [tp]: score }));
-
-  const isDone = (id: StageId) => id !== 'orientasi' && id !== 'latihan' && scores[id] !== null;
-
-  return (
-    <div className="min-h-screen bg-slate-950 text-slate-100 flex flex-col font-sans selection:bg-red-500 selection:text-white">
-      <Navbar soundEnabled={soundEnabled} onToggleSound={handleToggleSound} onOpenGuide={() => setIsGuideOpen(true)} />
-
-      <nav aria-label="Tahap belajar" className="border-b border-slate-800 bg-slate-950/95">
-        <ol className="max-w-7xl mx-auto px-4 sm:px-6 py-2.5 grid grid-cols-5 gap-1.5">
-          {STAGES.map((s) => {
-            const active = s.id === stage;
-            const locked = s.id !== 'orientasi' && !ready;
-            return (
-              <li key={s.id}>
-                <button
-                  disabled={locked}
-                  title={locked ? 'Isi nama dan kelas di tahap Mulai terlebih dahulu' : undefined}
-                  onClick={() => {
-                    sound.playClick();
-                    goTo(s.id);
-                  }}
-                  aria-current={active ? 'step' : undefined}
-                  className={`w-full rounded-xl border px-1.5 py-1.5 text-center transition-colors ${
-                    active
-                      ? 'bg-amber-400 border-amber-300 text-slate-950'
-                      : 'bg-slate-900 border-slate-800 text-slate-300 hover:bg-slate-800 disabled:opacity-40 disabled:hover:bg-slate-900'
-                  }`}
-                >
-                  <span className="flex items-center justify-center gap-1 text-[11px] font-bold">
-                    {isDone(s.id) && <CheckCircle2 className={`w-3.5 h-3.5 ${active ? 'text-slate-900' : 'text-emerald-400'}`} />}
-                    <span>{s.short}</span>
-                  </span>
-                  <span className="block text-[10px] sm:text-xs font-semibold truncate">{s.title}</span>
-                </button>
-              </li>
-            );
-          })}
-        </ol>
-      </nav>
-
-      <main className="flex-1 max-w-7xl w-full mx-auto px-4 sm:px-6 py-5 sm:py-6">
-        {(stage === 'orientasi' || !ready) && (
-          <OrientationStage
-            name={name}
-            kelas={kelas}
-            ready={ready}
-            onIdentity={(n, k) => {
-              setName(n);
-              setKelas(k);
-            }}
-            onContinue={() => goTo('tp1')}
-          />
-        )}
-        {ready && stage === 'tp1' && <LocateStage onComplete={saveScore('tp1')} onContinue={() => goTo('tp2')} />}
-        {ready && stage === 'tp2' && <CompareStage onComplete={saveScore('tp2')} onContinue={() => goTo('tp3')} />}
-        {ready && stage === 'tp3' && <OrderStage onComplete={saveScore('tp3')} onContinue={() => goTo('latihan')} />}
-        {ready && stage === 'latihan' && <PracticeStage name={name} kelas={kelas} stageScores={scores} />}
-      </main>
-
-      <GuideModal isOpen={isGuideOpen} onClose={() => setIsGuideOpen(false)} />
-
-      <footer className="border-t border-slate-900 bg-slate-950/80 py-5 px-4 sm:px-6 mt-auto">
-        <div className="max-w-7xl mx-auto flex flex-col sm:flex-row items-center justify-between gap-3 text-xs text-slate-400">
-          <div className="flex items-center gap-2">
-            <span className="w-2 h-2 rounded-full bg-red-600" />
-            <span className="font-medium text-slate-300">
-              Media Pembelajaran Bilangan Bulat · Konteks Sungai Musi Palembang
-            </span>
-          </div>
-          <span>Letak · Membandingkan · Mengurutkan</span>
-        </div>
-      </footer>
-    </div>
-  );
+  // Tanpa konfigurasi Firebase, media tetap bisa dipakai dalam mode lokal seperti sebelumnya.
+  return firebaseEnabled ? <OnlineApp /> : <StudentApp />;
 }

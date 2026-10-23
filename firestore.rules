@@ -1,0 +1,63 @@
+rules_version = '2';
+
+// Aturan keamanan Firestore untuk media Bilangan Bulat Sungai Musi.
+// Salin seluruh isi file ini ke Firebase Console > Firestore Database > Rules, lalu Publish.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // GANTI daftar email di bawah dengan email akun Google guru (huruf kecil semua).
+    // Daftar yang sama juga ditulis di src/firebase-config.ts (TEACHER_EMAILS).
+    function isTeacher() {
+      return request.auth != null
+        && request.auth.token.email_verified == true
+        && request.auth.token.email.lower() in ['guru@contoh.sch.id'];
+    }
+
+    function isOwner(uid) {
+      return request.auth != null && request.auth.uid == uid;
+    }
+
+    function validFields(d) {
+      return d.keys().hasOnly(['nama', 'kelas', 'akun', 'dibuat', 'diperbarui', 'state'])
+        && d.nama is string && d.nama.size() > 0 && d.nama.size() <= 80
+        && d.kelas is string && d.kelas.size() > 0 && d.kelas.size() <= 20
+        && d.akun is string && d.akun.size() <= 120
+        && d.state is map && d.state.size() <= 30;
+    }
+
+    // Tahap yang sudah selesai ("finished":true) tidak boleh diubah lagi.
+    function stageUnchangedIfFinished(key) {
+      return !(key in resource.data.state)
+        || !resource.data.state[key].matches('.*"finished":true.*')
+        || (key in request.resource.data.state
+            && request.resource.data.state[key] == resource.data.state[key]);
+    }
+
+    // Jawaban latihan yang sudah dikumpulkan tidak boleh diubah lagi.
+    function practiceUnchangedIfSubmitted() {
+      return !('latihan-dikumpulkan' in resource.data.state)
+        || resource.data.state['latihan-dikumpulkan'] == 'null'
+        || (request.resource.data.state.get('latihan-dikumpulkan', '') == resource.data.state['latihan-dikumpulkan']
+            && request.resource.data.state.get('latihan-jawaban', '') == resource.data.state.get('latihan-jawaban', ''));
+    }
+
+    match /siswa/{uid} {
+      allow read: if isOwner(uid) || isTeacher();
+
+      allow create: if isOwner(uid) && validFields(request.resource.data);
+
+      // Nama, kelas, dan akun dikunci setelah profil dibuat.
+      allow update: if isOwner(uid)
+        && validFields(request.resource.data)
+        && request.resource.data.nama == resource.data.nama
+        && request.resource.data.kelas == resource.data.kelas
+        && request.resource.data.akun == resource.data.akun
+        && stageUnchangedIfFinished('tp1')
+        && stageUnchangedIfFinished('tp2')
+        && stageUnchangedIfFinished('tp3')
+        && practiceUnchangedIfSubmitted();
+
+      allow delete: if false;
+    }
+  }
+}

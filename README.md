@@ -7,6 +7,9 @@ Media ini dirancang untuk pembelajaran **asinkronus**: murid membuka tautan dari
 Dokumen pendamping:
 
 - [Lampiran 1. Rancangan Aktivitas Web Interaktif](docs/lampiran-1-rancangan-aktivitas-web-interaktif.md)
+- [Panduan Login Siswa dan Laporan Guru (Firebase)](docs/panduan-login-dan-laporan-guru.md)
+
+Media berjalan dalam dua mode. **Mode lokal** (tanpa pengaturan) menyimpan kemajuan di peramban siswa saja. **Mode login** aktif setelah `src/firebase-config.ts` diisi: siswa masuk dengan akun Google atau nama pengguna + kata sandi, semua jawaban tersimpan di Firestore (tetap tercatat saat internet putus lalu terkirim otomatis), dan guru membuka halaman laporan beserta ekspor Excel di link yang sama.
 
 ---
 
@@ -187,13 +190,21 @@ Teknologi: React 19, TypeScript, Vite, Tailwind CSS 4, ikon `lucide-react`, efek
 ├── package.json               Dependensi dan skrip npm
 ├── vite.config.ts             Konfigurasi Vite (React + Tailwind)
 ├── tsconfig.json              Konfigurasi TypeScript
+├── firestore.rules            Aturan keamanan Firestore (ditempel di Firebase Console)
 ├── .github/workflows/
 │   └── deploy-pages.yml       Terbit otomatis ke GitHub Pages
 ├── docs/
 │   └── lampiran-1-rancangan-aktivitas-web-interaktif.md
 └── src/
     ├── main.tsx               Titik masuk React
-    ├── App.tsx                Navigasi 5 tahap, penyimpanan kemajuan, papan skor
+    ├── App.tsx                Pemilih mode: lokal, atau login (siswa/guru) dengan Firebase
+    ├── StudentApp.tsx         Navigasi 5 tahap, penyimpanan kemajuan, papan skor
+    ├── firebase-config.ts     Konfigurasi Firebase dan daftar email guru (diisi pengguna)
+    ├── services/
+    │   ├── firebase.ts        Inisialisasi Firebase, cache offline, akun nama pengguna
+    │   ├── progress.ts        Dokumen siswa di Firestore, status sinkron
+    │   ├── report.ts          Olah data laporan guru dan ekspor Excel
+    │   └── session.ts         Data pendaftaran sementara
     ├── index.css              Impor Tailwind
     ├── types/index.ts         Tipe data: tahap, skor, bentuk soal
     ├── utils/
@@ -202,6 +213,9 @@ Teknologi: React 19, TypeScript, Vite, Tailwind CSS 4, ikon `lucide-react`, efek
     │   └── storage.ts         Penyimpanan kemajuan di peramban (usePersistentState)
     └── components/
         ├── Navbar.tsx             Judul, tombol suara, tombol Panduan & Info
+        ├── LoginPage.tsx          Login siswa (Google atau nama pengguna) dan guru
+        ├── ProfileForm.tsx        Isian nama dan kelas untuk akun Google baru
+        ├── TeacherDashboard.tsx   Laporan guru: rekap, rincian per soal, refleksi, Excel
         ├── GuideModal.tsx         TP, alur media, catatan data, daftar sumber
         ├── OrientationStage.tsx   Tahap Mulai: identitas, TP, alur pengerjaan, eksplorasi
         ├── LocateStage.tsx        Tahap 1 (TP 1): bank soal dan diagnosis kesalahan letak

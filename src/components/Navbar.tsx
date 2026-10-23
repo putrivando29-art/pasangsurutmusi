@@ -1,16 +1,18 @@
-import React from 'react';
+import React, { type ReactNode } from 'react';
 import { Volume2, VolumeX, HelpCircle } from 'lucide-react';
 
 interface NavbarProps {
   soundEnabled: boolean;
   onToggleSound: () => void;
   onOpenGuide: () => void;
+  extra?: ReactNode;
 }
 
 export const Navbar: React.FC<NavbarProps> = ({
   soundEnabled,
   onToggleSound,
   onOpenGuide,
+  extra,
 }) => {
   return (
     <header className="sticky top-0 z-40 w-full border-b border-slate-800 bg-slate-950/90 backdrop-blur-md">
@@ -36,7 +38,7 @@ export const Navbar: React.FC<NavbarProps> = ({
         </div>
 
         {/* Action icons right */}
-        <div className="flex items-center gap-2.5">
+        <div className="flex flex-wrap items-center justify-center gap-2.5">
           {/* Sound Toggle */}
           <button
             onClick={onToggleSound}
@@ -65,6 +67,7 @@ export const Navbar: React.FC<NavbarProps> = ({
             <HelpCircle className="w-3.5 h-3.5 text-amber-400" />
             <span>Panduan & Info</span>
           </button>
+          {extra}
         </div>
       </div>
     </header>
