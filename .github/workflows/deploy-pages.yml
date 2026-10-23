@@ -20,13 +20,15 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      # bun.lock mengunci versi dependensi yang sudah teruji; npm install
+      # menolak dependensi bawaan templat karena konflik peer dependency.
+      - uses: oven-sh/setup-bun@v2
         with:
-          node-version: 22
-      - run: npm install
-      - run: npm run lint
+          bun-version: 1.4.2
+      - run: bun install --frozen-lockfile
+      - run: bun run lint
       # Situs proyek GitHub Pages berada di /<nama-repo>/, bukan di akar domain.
-      - run: npx vite build --base=/${{ github.event.repository.name }}/
+      - run: bunx vite build --base=/${{ github.event.repository.name }}/
       - uses: actions/upload-pages-artifact@v3
         with:
           path: dist

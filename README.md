@@ -157,7 +157,7 @@ Catatan verifikasi: ketiga sumber di atas dikutip dari ringkasan hasil pencarian
 Kebutuhan: Node.js 22 (atau Bun).
 
 ```bash
-npm install        # atau: bun install
+bun install        # atau: npm install --legacy-peer-deps
 npm run dev        # server pengembangan di http://localhost:3000
 npm run lint       # pemeriksaan tipe TypeScript (tsc --noEmit)
 npm run build      # hasil statis di folder dist/
